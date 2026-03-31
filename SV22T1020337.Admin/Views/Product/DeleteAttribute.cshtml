@@ -1,0 +1,62 @@
+﻿<div class="card border-danger">
+    <div class="card-header bg-danger text-white">
+        <h5 class="mb-0">
+            <i class="bi bi-exclamation-triangle me-1"></i>
+            Xác nhận xoá thuộc tính sản phẩm
+        </h5>
+    </div>
+
+    <div class="card-body">
+        <form method="post">
+
+            <!-- Cảnh báo -->
+            <div class="alert alert-warning">
+                <i class="bi bi-exclamation-circle me-1"></i>
+                Bạn có chắc chắn muốn xoá thuộc tính này không?
+                Dữ liệu sau khi xoá sẽ <strong>không thể khôi phục</strong>.
+            </div>
+
+            <!-- Thuộc tính -->
+            <div class="row mb-3">
+                <label class="col-sm-3 col-form-label">
+                    Thuộc tính sản phẩm
+                </label>
+                <div class="col-sm-9">
+                    <input type="text"
+                           class="form-control"
+                           value="Màu sắc"
+                           disabled />
+                </div>
+            </div>
+
+            <!-- Mô tả -->
+            <div class="row mb-3">
+                <label class="col-sm-3 col-form-label">
+                    Mô tả
+                </label>
+                <div class="col-sm-9">
+                    <textarea class="form-control"
+                              rows="3"
+                              disabled>Đen / Trắng / Xanh</textarea>
+                </div>
+            </div>
+
+            <!-- Buttons -->
+            <div class="row">
+                <div class="col-sm-9 offset-sm-3 text-end">
+                    <button type="submit" class="btn btn-danger">
+                        <i class="bi bi-trash me-1"></i>
+                        Xoá thuộc tính
+                    </button>
+
+                    <a href="~/Product/ListAttributes/1"
+                       class="btn btn-secondary ms-2">
+                        <i class="bi bi-arrow-left"></i>
+                        Bỏ qua
+                    </a>
+                </div>
+            </div>
+
+        </form>
+    </div>
+</div>

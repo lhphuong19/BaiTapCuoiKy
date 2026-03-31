@@ -1,0 +1,87 @@
+﻿<div class="card border-danger">
+    <div class="card-header bg-danger text-white">
+        <h5 class="mb-0">
+            <i class="bi bi-exclamation-triangle me-1"></i>
+            Xác nhận xoá hình ảnh sản phẩm
+        </h5>
+    </div>
+
+    <div class="card-body">
+        <form method="post">
+
+            <!-- Cảnh báo -->
+            <div class="alert alert-warning">
+                <i class="bi bi-exclamation-circle me-1"></i>
+                Bạn có chắc chắn muốn xoá hình ảnh này không?
+                Dữ liệu sau khi xoá sẽ <strong>không thể khôi phục</strong>.
+            </div>
+
+            <!-- Ảnh -->
+            <div class="row mb-3">
+                <label class="col-sm-3 col-form-label">
+                    Hình ảnh
+                </label>
+                <div class="col-sm-9">
+                    <img src="~/images/sample-product.jpg"
+                         class="img-thumbnail"
+                         style="width:150px;height:150px;object-fit:cover" />
+                </div>
+            </div>
+
+            <!-- Mô tả -->
+            <div class="row mb-3">
+                <label class="col-sm-3 col-form-label">
+                    Mô tả
+                </label>
+                <div class="col-sm-9">
+                    <textarea class="form-control"
+                              rows="3"
+                              disabled>Hình ảnh minh hoạ sản phẩm</textarea>
+                </div>
+            </div>
+
+            <!-- Thứ tự -->
+            <div class="row mb-3">
+                <label class="col-sm-3 col-form-label">
+                    Thứ tự hiển thị
+                </label>
+                <div class="col-sm-9">
+                    <input type="number"
+                           class="form-control"
+                           value="1"
+                           disabled />
+                </div>
+            </div>
+
+            <!-- Hiển thị -->
+            <div class="row mb-3">
+                <label class="col-sm-3 col-form-label">
+                    Trạng thái
+                </label>
+                <div class="col-sm-9 pt-2">
+                    <span class="badge bg-success">Hiện</span>
+                    <!--
+                    <span class="badge bg-secondary">Ẩn</span>
+                    -->
+                </div>
+            </div>
+
+            <!-- Buttons -->
+            <div class="row">
+                <div class="col-sm-9 offset-sm-3 text-end">
+                    <button type="submit" class="btn btn-danger">
+                        <i class="bi bi-trash me-1"></i>
+                        Xoá hình ảnh
+                    </button>
+
+                    <a href="~/Product/Edit"
+                       class="btn btn-secondary ms-2">
+                        <i class="bi bi-arrow-left"></i>
+                        Bỏ qua
+                    </a>
+                </div>
+            </div>
+
+        </form>
+    </div>
+</div>
