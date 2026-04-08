@@ -1,0 +1,17 @@
+﻿<div class="mb-3 d-flex justify-content-between align-items-center">
+    <a asp-controller="Catalog" asp-action="Index"
+       class="btn btn-outline-secondary btn-sm">
+        ← Về trang chủ
+    </a>
+
+    <nav aria-label="breadcrumb" class="mb-0">
+        <ol class="breadcrumb small mb-0">
+            <li class="breadcrumb-item">
+                <a asp-controller="Catalog" asp-action="Index">Trang chủ</a>
+            </li>
+            <li class="breadcrumb-item active">
+                @ViewBag.Title
+            </li>
+        </ol>
+    </nav>
+</div>

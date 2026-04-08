@@ -16,9 +16,11 @@ namespace SV22T1020337.Shop.Controllers
         {
             try
             {
-                // Lấy filter từ session nếu cần
-                if (filter == null || (filter.CategoryID == 0 && string.IsNullOrEmpty(filter.SearchValue)
-                    && filter.MinPrice == 0 && filter.MaxPrice == 0))
+                // Chỉ lấy từ session khi không có bất kỳ tham số nào được truyền vào
+                if (filter == null || (!Request.Query.ContainsKey("SearchValue")
+                    && !Request.Query.ContainsKey("CategoryID")
+                    && !Request.Query.ContainsKey("MinPrice")
+                    && !Request.Query.ContainsKey("MaxPrice")))
                 {
                     var saved = ApplicationContext.GetSessionData<ProductFilterInputModel>(PRODUCT_SEARCH_KEY);
                     if (saved != null) filter = saved;
