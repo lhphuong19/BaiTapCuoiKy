@@ -1,0 +1,95 @@
+﻿@{
+}
+<style>
+    .shop-footer {
+        background: #1a1a1a;
+        color: rgba(255,255,255,0.65);
+        padding: 3rem 0 1.5rem;
+        font-family: 'DM Sans', sans-serif;
+        font-size: 0.875rem;
+        border-top: 3px solid #c8590a;
+    }
+
+        .shop-footer .footer-brand {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: #fff;
+            margin-bottom: 0.5rem;
+        }
+
+            .shop-footer .footer-brand span {
+                color: #c8590a;
+            }
+
+        .shop-footer .footer-tagline {
+            color: rgba(255,255,255,0.4);
+            font-size: 0.8rem;
+            letter-spacing: 0.5px;
+        }
+
+        .shop-footer h6 {
+            font-family: 'DM Sans', sans-serif;
+            font-weight: 600;
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            color: rgba(255,255,255,0.4);
+            margin-bottom: 1rem;
+        }
+
+        .shop-footer a {
+            color: rgba(255,255,255,0.65);
+            text-decoration: none;
+            display: block;
+            margin-bottom: 0.45rem;
+            transition: color 0.2s;
+        }
+
+            .shop-footer a:hover {
+                color: #c8590a;
+            }
+
+    .footer-contact p {
+        margin-bottom: 0.45rem;
+        color: rgba(255,255,255,0.65);
+    }
+
+    .footer-divider {
+        border-color: rgba(255,255,255,0.08);
+        margin: 2rem 0 1rem;
+    }
+
+    .footer-copy {
+        color: rgba(255,255,255,0.3);
+        font-size: 0.78rem;
+        text-align: center;
+    }
+</style>
+
+<footer class="shop-footer">
+    <div class="container">
+        <div class="row g-4">
+            <div class="col-md-4">
+                <div class="footer-brand">Rau Ma <span>Shop</span></div>
+                <p class="footer-tagline">Mua sắm thông minh — Cuộc sống tiện lợi.</p>
+            </div>
+            <div class="col-md-4">
+                <h6>Liên kết</h6>
+                <a asp-controller="Catalog" asp-action="Index">Sản phẩm</a>
+                <a asp-controller="Cart" asp-action="Index">Giỏ hàng</a>
+                @if (User.Identity?.IsAuthenticated == true)
+                {
+                    <a asp-controller="Order" asp-action="History">Đơn hàng của tôi</a>
+                }
+            </div>
+            <div class="col-md-4 footer-contact">
+                <h6>Hỗ trợ</h6>
+                <p>✉ support@litecommerce.vn</p>
+                <p>☎ 1800 xxx xxx</p>
+            </div>
+        </div>
+        <hr class="footer-divider">
+        <p class="footer-copy mb-0">&copy; @DateTime.Now.Year LiteCommerce Shop. All rights reserved.</p>
+    </div>
+</footer>

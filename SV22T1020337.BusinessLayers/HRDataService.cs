@@ -33,7 +33,14 @@ namespace SV22T1020337.BusinessLayers
         /// </returns>
         public static async Task<PagedResult<Employee>> ListEmployeesAsync(PaginationSearchInput input)
         {
-            return await employeeDB.ListEmployeesAsync(input);
+            try
+            {
+                return await employeeDB.ListEmployeesAsync(input);
+            }
+            catch
+            {
+                throw;
+            }
         }
 
         /// <summary>
@@ -45,7 +52,14 @@ namespace SV22T1020337.BusinessLayers
         /// </returns>
         public static async Task<Employee?> GetEmployeeAsync(int employeeID)
         {
-            return await employeeDB.GetAsync(employeeID);
+            try
+            {
+                return await employeeDB.GetAsync(employeeID);
+            }
+            catch
+            {
+                throw;
+            }
         }
 
         /// <summary>
@@ -55,8 +69,21 @@ namespace SV22T1020337.BusinessLayers
         /// <returns>Mã nhân viên được tạo mới.</returns>
         public static async Task<int> AddEmployeeAsync(Employee data)
         {
-            //TODO: Kiểm tra dữ liệu hợp lệ
-            return await employeeDB.AddAsync(data);
+            try
+            {
+                if (data == null) return 0;
+                if (string.IsNullOrWhiteSpace(data.FullName)) return 0;
+                if (string.IsNullOrWhiteSpace(data.Email)) return 0;
+                if (!await employeeDB.ValidateEmailAsync(data.Email, 0)) return 0;
+
+                data.FullName = data.FullName.Trim();
+                data.Email = data.Email.Trim();
+                return await employeeDB.AddAsync(data);
+            }
+            catch
+            {
+                throw;
+            }
         }
 
         /// <summary>
@@ -68,8 +95,21 @@ namespace SV22T1020337.BusinessLayers
         /// </returns>
         public static async Task<bool> UpdateEmployeeAsync(Employee data)
         {
-            //TODO: Kiểm tra dữ liệu hợp lệ
-            return await employeeDB.UpdateAsync(data);
+            try
+            {
+                if (data == null) return false;
+                if (string.IsNullOrWhiteSpace(data.FullName)) return false;
+                if (string.IsNullOrWhiteSpace(data.Email)) return false;
+                if (!await employeeDB.ValidateEmailAsync(data.Email, data.EmployeeID)) return false;
+
+                data.FullName = data.FullName.Trim();
+                data.Email = data.Email.Trim();
+                return await employeeDB.UpdateAsync(data);
+            }
+            catch
+            {
+                throw;
+            }
         }
 
         /// <summary>
@@ -82,10 +122,17 @@ namespace SV22T1020337.BusinessLayers
         /// </returns>
         public static async Task<bool> DeleteEmployeeAsync(int employeeID)
         {
-            if (await employeeDB.IsUsedAsync(employeeID))
-                return false;
+            try
+            {
+                if (await employeeDB.IsUsedAsync(employeeID))
+                    return false;
 
-            return await employeeDB.DeleteAsync(employeeID);
+                return await employeeDB.DeleteAsync(employeeID);
+            }
+            catch
+            {
+                throw;
+            }
         }
 
         /// <summary>
@@ -97,7 +144,14 @@ namespace SV22T1020337.BusinessLayers
         /// </returns>
         public static async Task<bool> IsUsedEmployeeAsync(int employeeID)
         {
-            return await employeeDB.IsUsedAsync(employeeID);
+            try
+            {
+                return await employeeDB.IsUsedAsync(employeeID);
+            }
+            catch
+            {
+                throw;
+            }
         }
 
         /// <summary>
@@ -114,7 +168,14 @@ namespace SV22T1020337.BusinessLayers
         /// </returns>
         public static async Task<bool> ValidateEmployeeEmailAsync(string email, int employeeID = 0)
         {
-            return await employeeDB.ValidateEmailAsync(email, employeeID);
+            try
+            {
+                return await employeeDB.ValidateEmailAsync(email, employeeID);
+            }
+            catch
+            {
+                throw;
+            }
         }
 
         #endregion

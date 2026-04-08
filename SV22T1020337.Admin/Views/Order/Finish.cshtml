@@ -1,27 +1,47 @@
-﻿@{
+@model OrderViewInfo
+@{
     Layout = null;
 }
-<div class="modal-header text-bg-success">
-    <strong class="modal-title">
-        Xác nhận đơn hàng thành công
-    </strong>
-    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-</div>
-
-<div class="modal-body">
-    <div class="alert alert-success d-flex align-items-center">
-        <i class="bi bi-info-circle me-2"></i>
-        Bạn có chắc chắn xác nhận đơn hàng này đã được giao thành công?
+<form method="post" action="@Url.Action("Finish", "Order", new { id = Model.OrderID })">
+    <div class="modal-header text-bg-success">
+        <strong class="modal-title">
+            <i class="bi bi-flag-fill me-1"></i>
+            Hoàn tất đơn hàng
+        </strong>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
     </div>
-</div>
 
-<div class="modal-footer">
-    <button type="submit" class="btn btn-primary">
-        <i class="bi bi-check"></i> Chấp nhận
-    </button>
-    <button type="button"
-            class="btn btn-secondary"
-            data-bs-dismiss="modal">
-        Đóng
-    </button>
-</div>
+    <div class="modal-body">
+        @if (!ViewData.ModelState.IsValid)
+        {
+            <div class="alert alert-danger">
+                @foreach (var err in ViewData.ModelState.Values.SelectMany(v => v.Errors))
+                {
+                    <div>@err.ErrorMessage</div>
+                }
+            </div>
+        }
+        <div class="alert alert-success d-flex align-items-center">
+            <i class="bi bi-check-circle me-2 fs-5"></i>
+            <div>
+                Bạn có chắc chắn xác nhận đơn hàng <strong>#@Model.OrderID</strong>
+                đã được giao thành công không?
+            </div>
+        </div>
+        <div class="row g-2">
+            <div class="col-6"><span class="fw-bold">Khách hàng:</span> @(string.IsNullOrEmpty(Model.CustomerName) ? "Khách lẻ" : Model.CustomerName)</div>
+            <div class="col-6"><span class="fw-bold">Người giao:</span> @Model.ShipperName</div>
+            <div class="col-6"><span class="fw-bold">Địa chỉ:</span> @Model.DeliveryAddress</div>
+            <div class="col-6"><span class="fw-bold">Giao lúc:</span> @string.Format("{0:dd/MM/yyyy HH:mm}", Model.ShippedTime)</div>
+        </div>
+    </div>
+
+    <div class="modal-footer">
+        <button type="submit" class="btn btn-success">
+            <i class="bi bi-check-lg me-1"></i> Xác nhận hoàn tất
+        </button>
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+            Đóng
+        </button>
+    </div>
+</form>

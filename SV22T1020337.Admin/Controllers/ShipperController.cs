@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using SV22T1020337.Models.Common;
 using SV22T1020337.Models.Partner;
 using System.Threading.Tasks;
@@ -8,6 +9,7 @@ namespace SV22T1020337.Admin.Controllers
     /// <summary>
     /// Cung cấp các chức năng quản lý dữ liệu liên quan đến người vận chuyển
     /// </summary>
+    [Authorize]
     public class ShipperController : Controller
     {
         private const string SHIPPER_SEARCH = "ShipperSearchInput";
@@ -17,22 +19,38 @@ namespace SV22T1020337.Admin.Controllers
         /// <returns></returns>
         public IActionResult Index()
         {
-            var input = ApplicationContext.GetSessionData<PaginationSearchInput>(SHIPPER_SEARCH);
-            if (input == null)
-                input = new PaginationSearchInput()
-                {
-                    Page = 1,
-                    PageSize = ApplicationContext.PageSize,
-                    SearchValue = ""
-                };
-            return View(input);
+            try
+            {
+                var input = ApplicationContext.GetSessionData<PaginationSearchInput>(SHIPPER_SEARCH);
+                if (input == null)
+                    input = new PaginationSearchInput()
+                    {
+                        Page = 1,
+                        PageSize = ApplicationContext.PageSize,
+                        SearchValue = ""
+                    };
+                return View(input);
+            }
+            catch (Exception ex)
+            {
+                ModelState.AddModelError(string.Empty, "Hệ thống đang xảy ra lỗi, vui lòng thử lại sau");
+                return RedirectToAction("Index", "Home");
+            }
         }
 
         public async Task<IActionResult> Search(PaginationSearchInput input)
         {
-            var result = await PartnerDataService.ListShippersAsync(input);
-            ApplicationContext.SetSessionData(SHIPPER_SEARCH, input);
-            return View(result);
+            try
+            {
+                var result = await PartnerDataService.ListShippersAsync(input);
+                ApplicationContext.SetSessionData(SHIPPER_SEARCH, input);
+                return View(result);
+            }
+            catch (Exception ex)
+            {
+                ModelState.AddModelError(string.Empty, "Hệ thống đang xảy ra lỗi, vui lòng thử lại sau");
+                return RedirectToAction("Index");
+            }
         }
 
         /// <summary>
@@ -41,12 +59,20 @@ namespace SV22T1020337.Admin.Controllers
         /// <returns></returns>
         public IActionResult Create()
         {
-            ViewBag.Title = "Bổ sung vận chuyển";
-            var model = new Shipper()
+            try
             {
-                ShipperID = 0
-            };
-            return View("Edit", model);
+                ViewBag.Title = "Bổ sung vận chuyển";
+                var model = new Shipper()
+                {
+                    ShipperID = 0
+                };
+                return View("Edit", model);
+            }
+            catch (Exception ex)
+            {
+                ModelState.AddModelError(string.Empty, "Hệ thống đang xảy ra lỗi, vui lòng thử lại sau");
+                return RedirectToAction("Index");
+            }
         }
 
         /// <summary>
@@ -56,11 +82,19 @@ namespace SV22T1020337.Admin.Controllers
         /// <returns></returns>
         public async Task<IActionResult> Edit(int id)
         {
-            ViewBag.Title = "Cập nhật thông tin vận chuyển";
-            var model = await PartnerDataService.GetShipperAsync(id);
-            if (model == null)
+            try
+            {
+                ViewBag.Title = "Cập nhật thông tin vận chuyển";
+                var model = await PartnerDataService.GetShipperAsync(id);
+                if (model == null)
+                    return RedirectToAction("Index");
+                return View(model);
+            }
+            catch (Exception ex)
+            {
+                ModelState.AddModelError(string.Empty, "Hệ thống đang xảy ra lỗi, vui lòng thử lại sau");
                 return RedirectToAction("Index");
-            return View(model);
+            }
         }
 
         /// <summary>
@@ -68,24 +102,32 @@ namespace SV22T1020337.Admin.Controllers
         /// </summary>
         /// <param name="id">Mã người vận chuyển cần xóa</param>
         /// <returns></returns>
-        public async Task<IActionResult> DeleteAsync(int id)
+        public async Task<IActionResult> Delete(int id)
         {
-            ViewBag.Title = "Xóa vận chuyển";
-            if (Request.Method == "POST")
+            try
             {
-                await PartnerDataService.DeleteShipperAsync(id);
+                ViewBag.Title = "Xóa vận chuyển";
+                if (Request.Method == "POST")
+                {
+                    await PartnerDataService.DeleteShipperAsync(id);
+                    return RedirectToAction("Index");
+                }
+
+
+                //GET
+                var model = await PartnerDataService.GetShipperAsync(id);
+                if (model == null)
+                    return RedirectToAction("Index");
+
+                ViewBag.CanDelete = !await PartnerDataService.IsUsedShipperAsync(id);
+
+                return View(model);
+            }
+            catch (Exception ex)
+            {
+                ModelState.AddModelError(string.Empty, "Hệ thống đang xảy ra lỗi, vui lòng thử lại sau");
                 return RedirectToAction("Index");
             }
-
-
-            //GET
-            var model = await PartnerDataService.GetShipperAsync(id);
-            if (model == null)
-                return RedirectToAction("Index");
-
-            ViewBag.CanDelete = !await PartnerDataService.IsUsedShipperAsync(id);
-
-            return View(model);
         }
 
         [HttpPost]

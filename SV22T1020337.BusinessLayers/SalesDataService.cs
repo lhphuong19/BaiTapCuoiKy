@@ -1,6 +1,9 @@
 ﻿using SV22T1020337.DataLayers.Interfaces;
 using SV22T1020337.DataLayers.SQLServer;
+using SV22T1020337.Models.Catalog;
 using SV22T1020337.Models.Common;
+using SV22T1020337.Models.DataDictionary;
+using SV22T1020337.Models.Partner;
 using SV22T1020337.Models.Sales;
 
 namespace SV22T1020337.BusinessLayers
@@ -28,7 +31,16 @@ namespace SV22T1020337.BusinessLayers
         /// </summary>
         public static async Task<PagedResult<OrderViewInfo>> ListOrdersAsync(OrderSearchInput input)
         {
-            return await orderDB.ListAsync(input);
+            {
+                try
+                {
+                    return await orderDB.ListAsync(input);
+                }
+                catch (Exception ex)
+                {
+                    throw;
+                }
+            }
         }
 
         /// <summary>
@@ -36,18 +48,45 @@ namespace SV22T1020337.BusinessLayers
         /// </summary>
         public static async Task<OrderViewInfo?> GetOrderAsync(int orderID)
         {
-            return await orderDB.GetAsync(orderID);
+            try
+            {
+                return await orderDB.GetAsync(orderID);
+            }
+            catch (Exception ex)
+            {
+                throw;
+            }
         }
 
         /// <summary>
         /// Tạo đơn hàng mới
         /// </summary>
-        public static async Task<int> AddOrderAsync(Order data)
-        {
-            data.Status = OrderStatusEnum.New;
-            data.OrderTime = DateTime.Now;
+        //public static async Task<int> AddOrderAsync(Order data)
+        //{
+        //    data.Status = OrderStatusEnum.New;
+        //    data.OrderTime = DateTime.Now;
 
-            return await orderDB.AddAsync(data);
+        //    return await orderDB.AddAsync(data);
+        //}
+
+        public static async Task<int> AddOrderAsync(int customerID = 0, string province = "", string address = "")
+        {
+            try
+            {
+                var order = new Order()
+                {
+                    CustomerID = customerID,
+                    DeliveryAddress = address,
+                    DeliveryProvince = province,
+                    Status = OrderStatusEnum.New,
+                    OrderTime = DateTime.Now
+                };
+                return await orderDB.AddAsync(order);
+            }
+            catch
+            {
+                throw;
+            }
         }
 
         /// <summary>
@@ -55,8 +94,23 @@ namespace SV22T1020337.BusinessLayers
         /// </summary>
         public static async Task<bool> UpdateOrderAsync(Order data)
         {
-            //TODO: Kiểm tra dữ liệu và trạng thái đơn hàng trước khi cập nhật
-            return await orderDB.UpdateAsync(data);
+            try
+            {
+                if (data == null) return false;
+
+                var existingOrder = await orderDB.GetAsync(data.OrderID);
+                if (existingOrder == null) return false;
+
+                if (existingOrder.Status != OrderStatusEnum.New &&
+                    existingOrder.Status != OrderStatusEnum.Accepted)
+                    return false;
+
+                return await orderDB.UpdateAsync(data);
+            }
+            catch
+            {
+                throw;
+            }
         }
 
         /// <summary>
@@ -64,8 +118,20 @@ namespace SV22T1020337.BusinessLayers
         /// </summary>
         public static async Task<bool> DeleteOrderAsync(int orderID)
         {
-            //TODO: Kiểm tra trạng thái đơn hàng trước khi xóa
-            return await orderDB.DeleteAsync(orderID);
+            try
+            {
+                var order = await orderDB.GetAsync(orderID);
+                if (order == null) return false;
+
+                if (order.Status != OrderStatusEnum.New)
+                    return false;
+
+                return await orderDB.DeleteAsync(orderID);
+            }
+            catch
+            {
+                throw;
+            }
         }
 
         #endregion
@@ -77,18 +143,22 @@ namespace SV22T1020337.BusinessLayers
         /// </summary>
         public static async Task<bool> AcceptOrderAsync(int orderID, int employeeID)
         {
-            var order = await orderDB.GetAsync(orderID);
-            if (order == null) 
-                return false;
+            try
+            {
+                var order = await orderDB.GetAsync(orderID);
+                if (order == null) return false;
+                if (order.Status != OrderStatusEnum.New) return false;
 
-            if (order.Status != OrderStatusEnum.New)
-                return false;
+                order.EmployeeID = employeeID;
+                order.AcceptTime = DateTime.Now;
+                order.Status = OrderStatusEnum.Accepted;
 
-            order.EmployeeID = employeeID;
-            order.AcceptTime = DateTime.Now;
-            order.Status = OrderStatusEnum.Accepted;
-
-            return await orderDB.UpdateAsync(order);
+                return await orderDB.UpdateAsync(order);
+            }
+            catch
+            {
+                throw;
+            }
         }
 
         /// <summary>
@@ -96,18 +166,22 @@ namespace SV22T1020337.BusinessLayers
         /// </summary>
         public static async Task<bool> RejectOrderAsync(int orderID, int employeeID)
         {
-            var order = await orderDB.GetAsync(orderID);
-            if (order == null) 
-                return false;
+            try
+            {
+                var order = await orderDB.GetAsync(orderID);
+                if (order == null) return false;
+                if (order.Status != OrderStatusEnum.New) return false;
 
-            if (order.Status != OrderStatusEnum.New)
-                return false;
+                order.EmployeeID = employeeID;
+                order.FinishedTime = DateTime.Now;
+                order.Status = OrderStatusEnum.Rejected;
 
-            order.EmployeeID = employeeID;
-            order.FinishedTime = DateTime.Now;
-            order.Status = OrderStatusEnum.Rejected;
-            
-            return await orderDB.UpdateAsync(order);
+                return await orderDB.UpdateAsync(order);
+            }
+            catch
+            {
+                throw;
+            }
         }
 
         /// <summary>
@@ -115,18 +189,24 @@ namespace SV22T1020337.BusinessLayers
         /// </summary>
         public static async Task<bool> CancelOrderAsync(int orderID)
         {
-            var order = await orderDB.GetAsync(orderID);
-            if (order == null) 
-                return false;
+            try
+            {
+                var order = await orderDB.GetAsync(orderID);
+                if (order == null) return false;
 
-            if (order.Status != OrderStatusEnum.New &&
-                order.Status != OrderStatusEnum.Accepted)
-                return false;
+                if (order.Status != OrderStatusEnum.New &&
+                    order.Status != OrderStatusEnum.Accepted)
+                    return false;
 
-            order.FinishedTime = DateTime.Now;
-            order.Status = OrderStatusEnum.Cancelled;
-            
-            return await orderDB.UpdateAsync(order);
+                order.FinishedTime = DateTime.Now;
+                order.Status = OrderStatusEnum.Cancelled;
+
+                return await orderDB.UpdateAsync(order);
+            }
+            catch
+            {
+                throw;
+            }
         }
 
         /// <summary>
@@ -134,18 +214,22 @@ namespace SV22T1020337.BusinessLayers
         /// </summary>
         public static async Task<bool> ShipOrderAsync(int orderID, int shipperID)
         {
-            var order = await orderDB.GetAsync(orderID);
-            if (order == null) 
-                return false;
+            try
+            {
+                var order = await orderDB.GetAsync(orderID);
+                if (order == null) return false;
+                if (order.Status != OrderStatusEnum.Accepted) return false;
 
-            if (order.Status != OrderStatusEnum.Accepted)
-                return false;
+                order.ShipperID = shipperID;
+                order.ShippedTime = DateTime.Now;
+                order.Status = OrderStatusEnum.Shipping;
 
-            order.ShipperID = shipperID;
-            order.ShippedTime = DateTime.Now;
-            order.Status = OrderStatusEnum.Shipping;
-            
-            return await orderDB.UpdateAsync(order);
+                return await orderDB.UpdateAsync(order);
+            }
+            catch
+            {
+                throw;
+            }
         }
 
         /// <summary>
@@ -153,17 +237,21 @@ namespace SV22T1020337.BusinessLayers
         /// </summary>
         public static async Task<bool> CompleteOrderAsync(int orderID)
         {
-            var order = await orderDB.GetAsync(orderID);
-            if (order == null) 
-                return false;
+            try
+            {
+                var order = await orderDB.GetAsync(orderID);
+                if (order == null) return false;
+                if (order.Status != OrderStatusEnum.Shipping) return false;
 
-            if (order.Status != OrderStatusEnum.Shipping)
-                return false;
+                order.FinishedTime = DateTime.Now;
+                order.Status = OrderStatusEnum.Completed;
 
-            order.FinishedTime = DateTime.Now;
-            order.Status = OrderStatusEnum.Completed;
-            
-            return await orderDB.UpdateAsync(order);
+                return await orderDB.UpdateAsync(order);
+            }
+            catch
+            {
+                throw;
+            }
         }
 
         #endregion
@@ -175,7 +263,14 @@ namespace SV22T1020337.BusinessLayers
         /// </summary>
         public static async Task<List<OrderDetailViewInfo>> ListDetailsAsync(int orderID)
         {
-            return await orderDB.ListDetailsAsync(orderID);
+            try
+            {
+                return await orderDB.ListDetailsAsync(orderID);
+            }
+            catch
+            {
+                throw;
+            }
         }
 
         /// <summary>
@@ -183,7 +278,14 @@ namespace SV22T1020337.BusinessLayers
         /// </summary>
         public static async Task<OrderDetailViewInfo?> GetDetailAsync(int orderID, int productID)
         {
-            return await orderDB.GetDetailAsync(orderID, productID);
+            try
+            {
+                return await orderDB.GetDetailAsync(orderID, productID);
+            }
+            catch
+            {
+                throw;
+            }
         }
 
         /// <summary>
@@ -191,8 +293,26 @@ namespace SV22T1020337.BusinessLayers
         /// </summary>
         public static async Task<bool> AddDetailAsync(OrderDetail data)
         {
-            //TODO: Kiểm tra dữ liệu và trạng thái đơn hàng trước khi thêm mặt hàng
-            return await orderDB.AddDetailAsync(data);
+            try
+            {
+                // Kiểm tra dữ liệu và trạng thái đơn hàng trước khi thêm mặt hàng
+                if (data == null) return false;
+                if (data.Quantity <= 0) return false;
+                if (data.SalePrice <= 0) return false;
+
+                //var order = await orderDB.GetAsync(data.OrderID);
+                //if (order == null) return false;
+
+                //// Chỉ được thêm mặt hàng khi đơn hàng ở trạng thái New
+                //if (order.Status != OrderStatusEnum.New)
+                //    return false;
+
+                return await orderDB.AddDetailAsync(data);
+            }
+            catch
+            {
+                throw;
+            }
         }
 
         /// <summary>
@@ -200,8 +320,26 @@ namespace SV22T1020337.BusinessLayers
         /// </summary>
         public static async Task<bool> UpdateDetailAsync(OrderDetail data)
         {
-            //TODO: Kiểm tra dữ liệu và trạng thái đơn hàng trước khi cập nhật mặt hàng
-            return await orderDB.UpdateDetailAsync(data);
+            try
+            {
+                // Kiểm tra dữ liệu và trạng thái đơn hàng trước khi cập nhật mặt hàng
+                if (data == null) return false;
+                if (data.Quantity <= 0) return false;
+                if (data.SalePrice <= 0) return false;
+
+                var order = await orderDB.GetAsync(data.OrderID);
+                if (order == null) return false;
+
+                // Chỉ được cập nhật mặt hàng khi đơn hàng ở trạng thái New
+                if (order.Status != OrderStatusEnum.New)
+                    return false;
+
+                return await orderDB.UpdateDetailAsync(data);
+            }
+            catch
+            {
+                throw;
+            }
         }
 
         /// <summary>
@@ -209,8 +347,22 @@ namespace SV22T1020337.BusinessLayers
         /// </summary>
         public static async Task<bool> DeleteDetailAsync(int orderID, int productID)
         {
-            //TODO: Kiểm tra trạng thái đơn hàng trước khi xóa mặt hàng
-            return await orderDB.DeleteDetailAsync(orderID, productID);
+            try
+            {
+                // Kiểm tra trạng thái đơn hàng trước khi xóa mặt hàng
+                var order = await orderDB.GetAsync(orderID);
+                if (order == null) return false;
+
+                // Chỉ được xóa mặt hàng khi đơn hàng ở trạng thái New
+                if (order.Status != OrderStatusEnum.New)
+                    return false;
+
+                return await orderDB.DeleteDetailAsync(orderID, productID);
+            }
+            catch
+            {
+                throw;
+            }
         }
 
         #endregion

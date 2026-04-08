@@ -31,7 +31,7 @@ namespace SV22T1020337.DataLayers.SQLServer
                         FullName AS DisplayName,
                         Email,
                         Photo,
-                        'Employee' AS RoleNames
+                        RoleNames
                   FROM Employees
                   WHERE Email = @userName
                         AND Password = @password

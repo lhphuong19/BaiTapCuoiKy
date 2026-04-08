@@ -36,7 +36,14 @@ namespace SV22T1020337.BusinessLayers
         /// </returns>
         public static async Task<PagedResult<Category>> ListCategoriesAsync(PaginationSearchInput input)
         {
-            return await categoryDB.ListEmployeesAsync(input);
+            try
+            {
+                return await categoryDB.ListEmployeesAsync(input);
+            }
+            catch
+            {
+                throw;
+            }
         }
 
         /// <summary>
@@ -48,7 +55,14 @@ namespace SV22T1020337.BusinessLayers
         /// </returns>
         public static async Task<Category?> GetCategoryAsync(int CategoryID)
         {
-            return await categoryDB.GetAsync(CategoryID);
+            try
+            {
+                return await categoryDB.GetAsync(CategoryID);
+            }
+            catch
+            {
+                throw;
+            }
         }
 
         /// <summary>
@@ -58,8 +72,19 @@ namespace SV22T1020337.BusinessLayers
         /// <returns>Mã loại hàng được tạo mới.</returns>
         public static async Task<int> AddCategoryAsync(Category data)
         {
-            //TODO: Kiểm tra dữ liệu hợp lệ
-            return await categoryDB.AddAsync(data);
+            // Kiểm tra dữ liệu hợp lệ
+            try
+            {
+                if (data == null) return 0;
+                if (string.IsNullOrWhiteSpace(data.CategoryName)) return 0;
+
+                data.CategoryName = data.CategoryName.Trim();
+                return await categoryDB.AddAsync(data);
+            }
+            catch
+            {
+                throw;
+            }
         }
 
         /// <summary>
@@ -71,8 +96,18 @@ namespace SV22T1020337.BusinessLayers
         /// </returns>
         public static async Task<bool> UpdateCategoryAsync(Category data)
         {
-            //TODO: Kiểm tra dữ liệu hợp lệ
-            return await categoryDB.UpdateAsync(data);
+            try
+            {
+                if (data == null) return false;
+                if (string.IsNullOrWhiteSpace(data.CategoryName)) return false;
+
+                data.CategoryName = data.CategoryName.Trim();
+                return await categoryDB.UpdateAsync(data);
+            }
+            catch
+            {
+                throw;
+            }
         }
 
         /// <summary>
@@ -85,10 +120,17 @@ namespace SV22T1020337.BusinessLayers
         /// </returns>
         public static async Task<bool> DeleteCategoryAsync(int CategoryID)
         {
-            if (await categoryDB.IsUsedAsync(CategoryID))
-                return false;
+            try
+            {
+                if (await categoryDB.IsUsedAsync(CategoryID))
+                    return false;
 
-            return await categoryDB.DeleteAsync(CategoryID);
+                return await categoryDB.DeleteAsync(CategoryID);
+            }
+            catch
+            {
+                throw;
+            }
         }
 
         /// <summary>
@@ -100,7 +142,14 @@ namespace SV22T1020337.BusinessLayers
         /// </returns>
         public static async Task<bool> IsUsedCategoryAsync(int CategoryID)
         {
-            return await categoryDB.IsUsedAsync(CategoryID);
+            try
+            {
+                return await categoryDB.IsUsedAsync(CategoryID);
+            }
+            catch
+            {
+                throw;
+            }
         }
 
         #endregion
@@ -118,7 +167,14 @@ namespace SV22T1020337.BusinessLayers
         /// </returns>
         public static async Task<PagedResult<Product>> ListProductsAsync(ProductSearchInput input)
         {
-            return await productDB.ListAsync(input);
+            try
+            {
+                return await productDB.ListAsync(input);
+            }
+            catch
+            {
+                throw;
+            }
         }
 
         /// <summary>
@@ -130,7 +186,14 @@ namespace SV22T1020337.BusinessLayers
         /// </returns>
         public static async Task<Product?> GetProductAsync(int productID)
         {
-            return await productDB.GetAsync(productID);
+            try
+            {
+                return await productDB.GetAsync(productID);
+            }
+            catch
+            {
+                throw;
+            }
         }
 
         /// <summary>
@@ -140,8 +203,21 @@ namespace SV22T1020337.BusinessLayers
         /// <returns>Mã mặt hàng được tạo mới.</returns>
         public static async Task<int> AddProductAsync(Product data)
         {
-            //TODO: Kiểm tra dữ liệu hợp lệ
-            return await productDB.AddAsync(data);
+            try
+            {
+                if (data == null) return 0;
+                if (string.IsNullOrWhiteSpace(data.ProductName)) return 0;
+                if (string.IsNullOrWhiteSpace(data.Unit)) return 0;
+                if (data.Price <= 0) return 0;
+
+                data.ProductName = data.ProductName.Trim();
+                data.Unit = data.Unit.Trim();
+                return await productDB.AddAsync(data);
+            }
+            catch
+            {
+                throw;
+            }
         }
 
         /// <summary>
@@ -153,8 +229,21 @@ namespace SV22T1020337.BusinessLayers
         /// </returns>
         public static async Task<bool> UpdateProductAsync(Product data)
         {
-            //TODO: Kiểm tra dữ liệu hợp lệ
-            return await productDB.UpdateAsync(data);
+            try
+            {
+                if (data == null) return false;
+                if (string.IsNullOrWhiteSpace(data.ProductName)) return false;
+                if (string.IsNullOrWhiteSpace(data.Unit)) return false;
+                if (data.Price <= 0) return false;
+
+                data.ProductName = data.ProductName.Trim();
+                data.Unit = data.Unit.Trim();
+                return await productDB.UpdateAsync(data);
+            }
+            catch
+            {
+                throw;
+            }
         }
 
         /// <summary>
@@ -167,10 +256,27 @@ namespace SV22T1020337.BusinessLayers
         /// </returns>
         public static async Task<bool> DeleteProductAsync(int productID)
         {
-            if (await productDB.IsUsedAsync(productID))
-                return false;
+            try
+            {
+                if (await productDB.IsUsedAsync(productID))
+                    return false;
 
-            return await productDB.DeleteAsync(productID);
+                // Xóa toàn bộ ảnh của sản phẩm trước
+                var photos = await productDB.ListPhotosAsync(productID);
+                foreach (var photo in photos)
+                    await productDB.DeletePhotoAsync(photo.PhotoID);
+
+                // Xóa toàn bộ thuộc tính của sản phẩm trước
+                var attributes = await productDB.ListAttributesAsync(productID);
+                foreach (var attr in attributes)
+                    await productDB.DeleteAttributeAsync(attr.AttributeID);
+
+                return await productDB.DeleteAsync(productID);
+            }
+            catch
+            {
+                throw;
+            }
         }
 
         /// <summary>
@@ -182,7 +288,14 @@ namespace SV22T1020337.BusinessLayers
         /// </returns>
         public static async Task<bool> IsUsedProductAsync(int productID)
         {
-            return await productDB.IsUsedAsync(productID);
+            try
+            {
+                return await productDB.IsUsedAsync(productID);
+            }
+            catch
+            {
+                throw;
+            }
         }
 
         #endregion
@@ -198,7 +311,14 @@ namespace SV22T1020337.BusinessLayers
         /// </returns>
         public static async Task<List<ProductAttribute>> ListAttributesAsync(int productID)
         {
-            return await productDB.ListAttributesAsync(productID);
+            try
+            {
+                return await productDB.ListAttributesAsync(productID);
+            }
+            catch
+            {
+                throw;
+            }
         }
 
         /// <summary>
@@ -210,7 +330,14 @@ namespace SV22T1020337.BusinessLayers
         /// </returns>
         public static async Task<ProductAttribute?> GetAttributeAsync(long attributeID)
         {
-            return await productDB.GetAttributeAsync(attributeID);
+            try
+            {
+                return await productDB.GetAttributeAsync(attributeID);
+            }
+            catch
+            {
+                throw;
+            }
         }
 
         /// <summary>
@@ -220,8 +347,21 @@ namespace SV22T1020337.BusinessLayers
         /// <returns>Mã thuộc tính được tạo mới.</returns>
         public static async Task<long> AddAttributeAsync(ProductAttribute data)
         {
-            //TODO: Kiểm tra dữ liệu hợp lệ
-            return await productDB.AddAttributeAsync(data);
+            try
+            {
+                if (data == null) return 0;
+                if (data.ProductID <= 0) return 0;
+                if (string.IsNullOrWhiteSpace(data.AttributeName)) return 0;
+                if (string.IsNullOrWhiteSpace(data.AttributeValue)) return 0;
+
+                data.AttributeName = data.AttributeName.Trim();
+                data.AttributeValue = data.AttributeValue.Trim();
+                return await productDB.AddAttributeAsync(data);
+            }
+            catch
+            {
+                throw;
+            }
         }
 
         /// <summary>
@@ -233,7 +373,20 @@ namespace SV22T1020337.BusinessLayers
         /// </returns>
         public static async Task<bool> UpdateAttributeAsync(ProductAttribute data)
         {
-            return await productDB.UpdateAttributeAsync(data);
+            try
+            {
+                if (data == null) return false;
+                if (string.IsNullOrWhiteSpace(data.AttributeName)) return false;
+                if (string.IsNullOrWhiteSpace(data.AttributeValue)) return false;
+
+                data.AttributeName = data.AttributeName.Trim();
+                data.AttributeValue = data.AttributeValue.Trim();
+                return await productDB.UpdateAttributeAsync(data);
+            }
+            catch
+            {
+                throw;
+            }
         }
 
         /// <summary>
@@ -245,7 +398,14 @@ namespace SV22T1020337.BusinessLayers
         /// </returns>
         public static async Task<bool> DeleteAttributeAsync(long attributeID)
         {
-            return await productDB.DeleteAttributeAsync(attributeID);
+            try
+            {
+                return await productDB.DeleteAttributeAsync(attributeID);
+            }
+            catch
+            {
+                throw;
+            }
         }
 
         #endregion
@@ -261,7 +421,14 @@ namespace SV22T1020337.BusinessLayers
         /// </returns>
         public static async Task<List<ProductPhoto>> ListPhotosAsync(int productID)
         {
-            return await productDB.ListPhotosAsync(productID);
+            try
+            {
+                return await productDB.ListPhotosAsync(productID);
+            }
+            catch
+            {
+                throw;
+            }
         }
 
         /// <summary>
@@ -273,7 +440,14 @@ namespace SV22T1020337.BusinessLayers
         /// </returns>
         public static async Task<ProductPhoto?> GetPhotoAsync(long photoID)
         {
-            return await productDB.GetPhotoAsync(photoID);
+            try
+            {
+                return await productDB.GetPhotoAsync(photoID);
+            }
+            catch
+            {
+                throw;
+            }
         }
 
         /// <summary>
@@ -283,7 +457,15 @@ namespace SV22T1020337.BusinessLayers
         /// <returns>Mã ảnh được tạo mới.</returns>
         public static async Task<long> AddPhotoAsync(ProductPhoto data)
         {
-            return await productDB.AddPhotoAsync(data);
+            try
+            {
+                if (data == null) return 0;
+                return await productDB.AddPhotoAsync(data);
+            }
+            catch
+            {
+                throw;
+            }
         }
 
         /// <summary>
@@ -295,7 +477,15 @@ namespace SV22T1020337.BusinessLayers
         /// </returns>
         public static async Task<bool> UpdatePhotoAsync(ProductPhoto data)
         {
-            return await productDB.UpdatePhotoAsync(data);
+            try
+            {
+                if (data == null) return false;
+                return await productDB.UpdatePhotoAsync(data);
+            }
+            catch
+            {
+                throw;
+            }
         }
 
         /// <summary>
@@ -307,7 +497,14 @@ namespace SV22T1020337.BusinessLayers
         /// </returns>
         public static async Task<bool> DeletePhotoAsync(long photoID)
         {
-            return await productDB.DeletePhotoAsync(photoID);
+            try
+            {
+                return await productDB.DeletePhotoAsync(photoID);
+            }
+            catch
+            {
+                throw;
+            }
         }
 
         #endregion

@@ -1,6 +1,8 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using SV22T1020337.BusinessLayers;
 using SV22T1020337.Models.Common;
+using SV22T1020337.Models.HR;
 using SV22T1020337.Models.Partner;
 using System.Buffers;
 using System.Threading.Tasks;
@@ -10,6 +12,7 @@ namespace SV22T1020337.Admin.Controllers
     /// <summary>
     /// Cung cấp các chức năng quản lý dữ liệu liên quan đến khách hàng
     /// </summary>
+    [Authorize]
     public class CustomerController : Controller
     {
         private const string CUSTOMER_SEARCH = "CustomerSearchInput";
@@ -19,16 +22,24 @@ namespace SV22T1020337.Admin.Controllers
         /// <returns></returns>
         public IActionResult Index()
         {
-            var input = ApplicationContext.GetSessionData<PaginationSearchInput>(CUSTOMER_SEARCH);
-            if(input == null)
-                input = new PaginationSearchInput()
-                {
-                    Page = 1,
-                    PageSize = ApplicationContext.PageSize,
-                    SearchValue = ""
-                };
+            try
+            {
+                var input = ApplicationContext.GetSessionData<PaginationSearchInput>(CUSTOMER_SEARCH);
+                if (input == null)
+                    input = new PaginationSearchInput()
+                    {
+                        Page = 1,
+                        PageSize = ApplicationContext.PageSize,
+                        SearchValue = ""
+                    };
 
-            return View(input);
+                return View(input);
+            }
+            catch (Exception ex)
+            {
+                ModelState.AddModelError(string.Empty, "Hệ thống đang xảy ra lỗi, vui lòng thử lại sau");
+                return RedirectToAction("Index", "Home");
+            }
         }
 
         /// <summary>
@@ -37,9 +48,17 @@ namespace SV22T1020337.Admin.Controllers
         /// <returns></returns>
         public async Task<IActionResult> Search(PaginationSearchInput input)
         {
-            var result = await PartnerDataService.ListCustomersAsync(input);
-            ApplicationContext.SetSessionData(CUSTOMER_SEARCH, input);
-            return View(result);
+            try
+            {
+                var result = await PartnerDataService.ListCustomersAsync(input);
+                ApplicationContext.SetSessionData(CUSTOMER_SEARCH, input);
+                return View(result);
+            }
+            catch (Exception ex)
+            {
+                ModelState.AddModelError(string.Empty, "Hệ thống đang xảy ra lỗi, vui lòng thử lại sau");
+                return RedirectToAction("Index");
+            }
         }
 
         /// <summary>
@@ -48,12 +67,20 @@ namespace SV22T1020337.Admin.Controllers
         /// <returns></returns>
         public IActionResult Create()
         {
-            ViewBag.Title = "Bổ sung khách hàng";
-            var model = new Customer()
+            try
             {
-                CustomerID = 0
-            };
-            return View("Edit", model);
+                ViewBag.Title = "Bổ sung khách hàng";
+                var model = new Customer()
+                {
+                    CustomerID = 0
+                };
+                return View("Edit", model);
+            }
+            catch (Exception ex)
+            {
+                ModelState.AddModelError(string.Empty, "Hệ thống đang xảy ra lỗi, vui lòng thử lại sau");
+                return RedirectToAction("Index");
+            }
         }
 
         /// <summary>
@@ -63,11 +90,19 @@ namespace SV22T1020337.Admin.Controllers
         /// <returns></returns>
         public async Task<IActionResult> Edit(int id)
         {
-            ViewBag.Title = "Cập nhật thông tin khách hàng";
-            var model = await PartnerDataService.GetCustomerAsync(id);
-            if (model == null)
+            try
+            {
+                ViewBag.Title = "Cập nhật thông tin khách hàng";
+                var model = await PartnerDataService.GetCustomerAsync(id);
+                if (model == null)
+                    return RedirectToAction("Index");
+                return View(model);
+            }
+            catch (Exception ex)
+            {
+                ModelState.AddModelError(string.Empty, "Hệ thống đang xảy ra lỗi, vui lòng thử lại sau");
                 return RedirectToAction("Index");
-            return View(model);
+            }
         }
 
         [HttpPost]
@@ -91,7 +126,7 @@ namespace SV22T1020337.Admin.Controllers
                     ModelState.AddModelError(nameof(data.Email), "Email đã được khách hàng khác dùng");
 
                 if (string.IsNullOrWhiteSpace(data.Province))
-                    ModelState.AddModelError(nameof(data.Province), "Bạn vô gia cư à?");
+                    ModelState.AddModelError(nameof(data.Province), "Vui lòng chọn tỉnh/thành phố");
 
                 //Nếu dữ liệu không hợp lệ thì trả lại cho view để nhập lại
                 if (!ModelState.IsValid)
@@ -110,15 +145,12 @@ namespace SV22T1020337.Admin.Controllers
 
                 return RedirectToAction("Index");
             }
-            catch (Exception ex) 
+            catch (Exception ex)
             {
-                //Ghi log lỗi với các thông tin nằm trong exception
-                //ex.Message
-                //ex.StackTrace
                 ModelState.AddModelError("error", "Hệ thống tạm thời đang bận, vui lòng thử lại sau vài ngày");
                 return View("Edit", data);
             }
-            
+
         }
 
         /// <summary>
@@ -128,21 +160,29 @@ namespace SV22T1020337.Admin.Controllers
         /// <returns></returns>
         public async Task<IActionResult> Delete(int id)
         {
-            if (Request.Method == "POST") 
+            try
             {
-                await PartnerDataService.DeleteCustomerAsync(id);
+                if (Request.Method == "POST")
+                {
+                    await PartnerDataService.DeleteCustomerAsync(id);
+                    return RedirectToAction("Index");
+                }
+
+
+                //GET
+                var model = await PartnerDataService.GetCustomerAsync(id);
+                if (model == null)
+                    return RedirectToAction("Index");
+
+                ViewBag.CanDelete = !await PartnerDataService.IsUsedCustomerAsync(id);
+
+                return View(model);
+            }
+            catch (Exception ex)
+            {
+                ModelState.AddModelError(string.Empty, "Hệ thống đang xảy ra lỗi, vui lòng thử lại sau");
                 return RedirectToAction("Index");
             }
-
-
-            //GET
-            var model = await PartnerDataService.GetCustomerAsync(id);
-            if (model == null)
-                return RedirectToAction("Index");
-
-            ViewBag.CanDelete = !await PartnerDataService.IsUsedCustomerAsync(id);
-
-            return View(model);
         }
 
         /// <summary>
@@ -150,10 +190,97 @@ namespace SV22T1020337.Admin.Controllers
         /// </summary>
         /// <param name="id">Mã khách hàng có account cần thay đổi mật khẩu</param>
         /// <returns></returns>
-        public IActionResult ChangePassword(int id)
+        public async Task<IActionResult> ChangePassword(int id)
         {
-            ViewBag.Title = "Thay đổi mật khẩu";
-            return View();
+            try
+            {
+                var customer = await PartnerDataService.GetCustomerAsync(id);
+                if (customer == null)
+                    return RedirectToAction("Index");
+
+                ViewBag.CustomerID = id;
+                ViewBag.CustomerName = customer.CustomerName;
+
+                ViewBag.IsLocked = customer.IsLocked;
+
+                return View();
+            }
+            catch
+            {
+                ModelState.AddModelError("", "Hệ thống lỗi");
+                return RedirectToAction("Index");
+            }
+        }
+
+        /// <summary>
+        /// Xử lý đổi mật khẩu cho khách hàng
+        /// </summary>
+        [HttpPost]
+        public async Task<IActionResult> ChangePassword(int id, string newPassword, string confirmPassword)
+        {
+            try
+            {
+                // 1. Validate
+                if (string.IsNullOrEmpty(newPassword))
+                    ModelState.AddModelError("newPassword", "Vui lòng nhập mật khẩu");
+
+                if (string.IsNullOrEmpty(confirmPassword))
+                    ModelState.AddModelError("confirmPassword", "Vui lòng nhập lại mật khẩu");
+
+                if (newPassword != confirmPassword)
+                    ModelState.AddModelError("confirmPassword", "Mật khẩu xác nhận không đúng");
+
+                // 2. Lấy customer
+                var customer = await PartnerDataService.GetCustomerAsync(id);
+                if (customer == null)
+                    return RedirectToAction("Index");
+
+                // 3. Nếu lỗi → trả lại view
+                if (!ModelState.IsValid)
+                {
+                    ViewBag.CustomerID = id;
+                    ViewBag.CustomerName = customer.CustomerName;
+                    ViewBag.CustomerEmail = customer.Email;
+                    ViewBag.IsLocked = customer.IsLocked;
+
+                    return View();
+                }
+
+                // 4. Hash password
+                string newPassMD5 = CryptHelper.HashMD5(newPassword);
+
+                // 5. Đổi mật khẩu
+                bool result = await SecurityDataService.ChangePasswordAsync(customer.Email, newPassMD5);
+
+                if (!result)
+                {
+                    ModelState.AddModelError("", "Không thể đổi mật khẩu");
+
+                    ViewBag.CustomerID = id;
+                    ViewBag.CustomerName = customer.CustomerName;
+                    ViewBag.CustomerEmail = customer.Email;
+                    ViewBag.IsLocked = customer.IsLocked;
+
+                    return View();
+                }
+
+                // 6. Thành công → KHÔNG redirect
+                ModelState.Clear(); // clear form
+
+                ViewBag.Success = "Đổi mật khẩu khách hàng thành công";
+
+                ViewBag.CustomerID = id;
+                ViewBag.CustomerName = customer.CustomerName;
+                ViewBag.CustomerEmail = customer.Email;
+                ViewBag.IsLocked = customer.IsLocked;
+
+                return View();
+            }
+            catch
+            {
+                ModelState.AddModelError("", "Hệ thống đang xảy ra lỗi");
+                return View();
+            }
         }
 
     }

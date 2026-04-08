@@ -21,6 +21,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Notes", "Notes", "{CD189B2D
 	ProjectSection(SolutionItems) = preProject
 		Implement.DataLayers.md = Implement.DataLayers.md
 		log.md = log.md
+		Login.md = Login.md
 		New.md = New.md
 	EndProjectSection
 EndProject

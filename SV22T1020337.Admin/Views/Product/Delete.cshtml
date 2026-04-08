@@ -8,7 +8,7 @@
     {
         <button type="submit" form="formDelete" class="btn btn-danger">
             <i class="bi bi-trash me-1"></i>
-        Xóa
+            Xóa
         </button>
     }
 
@@ -29,7 +29,9 @@
             </div>
 
             <div class="card-body">
-                <form id="formDelete" method="post">
+                <form id="formDelete" method="post" asp-action="Delete" asp-route-id="@Model.ProductID">
+                    @Html.AntiForgeryToken()
+                    <input type="hidden" name="id" value="@Model.ProductID" />
                     @if (ViewBag.CanDelete)
                     {
                         <div class="alert alert-warning d-flex align-items-center">

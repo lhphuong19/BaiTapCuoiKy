@@ -1,27 +1,46 @@
-﻿@{
+﻿@model OrderViewInfo
+@{
     Layout = null;
 }
-<div class="modal-header text-bg-info">
-    <strong class="modal-title">
-        Duyệt chấp nhận đơn hàng
-    </strong>
-    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-</div>
-
-<div class="modal-body">
-    <div class="alert alert-info d-flex align-items-center">
-        <i class="bi bi-info-circle me-2"></i>
-        Bạn có chắc chắn muốn duyệt và chấp nhận đơn hàng này không?
+<form method="post" action="@Url.Action("Accept", "Order", new { id = Model.OrderID })">
+    <div class="modal-header text-bg-info">
+        <strong class="modal-title">
+            Duyệt chấp nhận đơn hàng
+        </strong>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
     </div>
-</div>
 
-<div class="modal-footer">
-    <button type="submit" class="btn btn-primary">
-        <i class="bi bi-check"></i> Chấp nhận
-    </button>
-    <button type="button"
-            class="btn btn-secondary"
-            data-bs-dismiss="modal">
-        Đóng
-    </button>
-</div>
+    <div class="modal-body">
+        @if (!ViewData.ModelState.IsValid)
+        {
+            <div class="alert alert-danger">
+                @foreach (var err in ViewData.ModelState.Values.SelectMany(v => v.Errors))
+                {
+                    <div>@err.ErrorMessage</div>
+                }
+            </div>
+        }
+        <div class="alert alert-info d-flex align-items-center">
+            <i class="bi bi-info-circle me-2 fs-5"></i>
+            <div>
+                Bạn có chắc chắn muốn <strong>duyệt và chấp nhận</strong> đơn hàng
+                <strong>#@Model.OrderID</strong> không?
+            </div>
+        </div>
+        <div class="row g-2">
+            <div class="col-6"><span class="fw-bold">Khách hàng:</span> @(string.IsNullOrEmpty(Model.CustomerName) ? "Khách lẻ" : Model.CustomerName)</div>
+            <div class="col-6"><span class="fw-bold">Ngày lập:</span> @string.Format("{0:dd/MM/yyyy HH:mm}", Model.OrderTime)</div>
+        </div>
+    </div>
+
+    <div class="modal-footer">
+        <button type="submit" class="btn btn-primary">
+            <i class="bi bi-check"></i> Chấp nhận
+        </button>
+        <button type="button"
+                class="btn btn-secondary"
+                data-bs-dismiss="modal">
+            Đóng
+        </button>
+    </div>
+</form>

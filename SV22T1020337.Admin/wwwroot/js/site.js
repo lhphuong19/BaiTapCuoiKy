@@ -21,9 +21,20 @@ function paginationSearch(event, form, page) {
     if (event) event.preventDefault();
     if (!form) return;
 
-    const url = form.action;
+    // Xử lý trường hợp action dùng "~/..." (Razor tilde không được resolve khi viết thẳng)
+    const rawUrl = form.getAttribute("action") || form.action;
+    const url = rawUrl.startsWith("~/")
+        ? window.location.origin + "/" + rawUrl.slice(2)
+        : new URL(rawUrl, window.location.origin).href;
     const method = (form.method || "GET").toUpperCase();
     const targetId = form.dataset.target;
+
+    // Xóa định dạng AutoNumeric trên các ô money-input trước khi lấy FormData
+    // (AutoNumeric chỉ unformat khi submit thật, không unformat khi dùng AJAX)
+    form.querySelectorAll(".money-input").forEach(function (el) {
+        var raw = el.value.replace(/\./g, "").replace(/,/g, ".");
+        el.value = isNaN(parseFloat(raw)) ? "0" : parseFloat(raw).toString();
+    });
 
     const formData = new FormData(form);
     formData.append("page", page);
@@ -32,6 +43,8 @@ function paginationSearch(event, form, page) {
     if (method === "GET") {
         const params = new URLSearchParams(formData).toString();
         fetchUrl = url + "?" + params;
+        // Cập nhật URL trên thanh địa chỉ mà không reload trang
+        history.pushState(null, "", fetchUrl);
     }
 
     let targetEl = null;
@@ -49,20 +62,20 @@ function paginationSearch(event, form, page) {
         method: method,
         body: method === "GET" ? null : formData
     })
-    .then(res => res.text())
-    .then(html => {
-        if (targetEl) {
-            targetEl.innerHTML = html;
-        }
-    })
-    .catch(() => {
-        if (targetEl) {
-            targetEl.innerHTML = `
+        .then(res => res.text())
+        .then(html => {
+            if (targetEl) {
+                targetEl.innerHTML = html;
+            }
+        })
+        .catch(() => {
+            if (targetEl) {
+                targetEl.innerHTML = `
                 <div class="text-danger">
                     Không tải được dữ liệu
                 </div>`;
-        }
-    });
+            }
+        });
 }
 
 // Mở modal và load nội dung từ link vào modal
@@ -115,5 +128,3 @@ function paginationSearch(event, form, page) {
             });
     };
 })();
-
-

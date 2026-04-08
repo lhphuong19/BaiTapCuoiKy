@@ -1,0 +1,123 @@
+@model RegisterModel
+@{
+    ViewBag.Title = "Đăng ký tài khoản";
+}
+
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-7 col-lg-6">
+            <div class="card border-0 shadow">
+                <div class="card-body p-4">
+                    <div class="text-center mb-4">
+                        <div class="fs-1 mb-2">📝</div>
+                        <h4 class="fw-bold">Đăng ký tài khoản</h4>
+                        <p class="text-muted small">Tạo tài khoản để mua sắm tiện lợi hơn</p>
+                    </div>
+
+                    @if (!ViewData.ModelState.IsValid && ViewData.ModelState.ErrorCount > 0)
+                    {
+                        <div asp-validation-summary="ModelOnly" class="alert alert-danger py-2 small"></div>
+                    }
+
+                    <form asp-action="Register" asp-controller="Account" method="post">
+                        <div class="row g-3">
+                            <!-- Tên khách hàng -->
+                            <div class="col-12">
+                                <label asp-for="CustomerName" class="form-label fw-semibold"></label>
+                                <input asp-for="CustomerName" class="form-control" placeholder="Tên doanh nghiệp hoặc cá nhân" />
+                                <span asp-validation-for="CustomerName" class="text-danger small"></span>
+                            </div>
+
+                            <!-- Tên giao dịch -->
+                            <div class="col-12">
+                                <label asp-for="ContactName" class="form-label fw-semibold"></label>
+                                <input asp-for="ContactName" class="form-control" placeholder="Họ tên người liên hệ" />
+                                <span asp-validation-for="ContactName" class="text-danger small"></span>
+                            </div>
+
+                            <!-- Điện thoại -->
+                            <div class="col-md-6">
+                                <label asp-for="Phone" class="form-label fw-semibold"></label>
+                                <input asp-for="Phone" class="form-control" placeholder="0901234567" />
+                                <span asp-validation-for="Phone" class="text-danger small"></span>
+                            </div>
+
+                            <!-- Tỉnh/Thành -->
+                            <div class="col-md-6">
+                                <label asp-for="Province" class="form-label fw-semibold"></label>
+                                <select class="form-select" asp-for="Province" asp-items="await SelectListHelper.ProvincesAsync()"></select>
+                                <span asp-validation-for="Province" class="text-danger small"></span>
+                            </div>
+
+                            <!-- Địa chỉ -->
+                            <div class="col-12">
+                                <label asp-for="Address" class="form-label fw-semibold"></label>
+                                <input asp-for="Address" class="form-control" placeholder="Số nhà, tên đường, phường/xã..." />
+                                <span asp-validation-for="Address" class="text-danger small"></span>
+                            </div>
+
+                            <hr class="my-1" />
+
+                            <!-- Email (dùng làm tên đăng nhập) -->
+                            <div class="col-12">
+                                <label asp-for="Email" class="form-label fw-semibold"></label>
+                                <input asp-for="Email" class="form-control" placeholder="email@example.com" autocomplete="email" />
+                                <div class="form-text small">Email sẽ dùng để đăng nhập.</div>
+                                <span asp-validation-for="Email" class="text-danger small"></span>
+                            </div>
+
+                            <!-- Mật khẩu -->
+                            <div class="col-md-6">
+                                <label asp-for="Password" class="form-label fw-semibold"></label>
+                                <div class="input-group">
+                                    <input asp-for="Password" class="form-control" id="pwd1"
+                                           placeholder="••••••••" autocomplete="new-password" />
+                                    <button class="btn btn-outline-secondary" type="button"
+                                            onclick="toggleVis('pwd1',this)">👁</button>
+                                </div>
+                                <span asp-validation-for="Password" class="text-danger small"></span>
+                            </div>
+
+                            <!-- Xác nhận mật khẩu -->
+                            <div class="col-md-6">
+                                <label asp-for="ConfirmPassword" class="form-label fw-semibold"></label>
+                                <div class="input-group">
+                                    <input asp-for="ConfirmPassword" class="form-control" id="pwd2"
+                                           placeholder="••••••••" autocomplete="new-password" />
+                                    <button class="btn btn-outline-secondary" type="button"
+                                            onclick="toggleVis('pwd2',this)">👁</button>
+                                </div>
+                                <span asp-validation-for="ConfirmPassword" class="text-danger small"></span>
+                            </div>
+
+                            <!-- Submit -->
+                            <div class="col-12 d-grid mt-2">
+                                <button type="submit" class="btn btn-dark fw-bold py-2">Đăng ký</button>
+                            </div>
+                        </div>
+                    </form>
+
+                    <hr class="my-3" />
+                    <div class="text-center small">
+                        Đã có tài khoản?
+                        <a asp-controller="Account" asp-action="Login" class="text-dark fw-bold text-decoration-none">
+                            Đăng nhập
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+
+<script>
+function toggleVis(id, btn) {
+    const input = document.getElementById(id);
+    input.type  = input.type === 'password' ? 'text' : 'password';
+    btn.textContent = input.type === 'password' ? '👁' : '🙈';
+}
+</script>
+}

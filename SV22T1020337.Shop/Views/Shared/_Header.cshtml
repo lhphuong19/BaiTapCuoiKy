@@ -1,0 +1,163 @@
+﻿@{
+}
+<style>
+    .shop-navbar {
+        background: rgba(26, 26, 26, 0.97);
+        backdrop-filter: blur(12px);
+        -webkit-backdrop-filter: blur(12px);
+        border-bottom: 1px solid rgba(255,255,255,0.06);
+        padding: 0.6rem 0;
+        transition: all 0.3s ease;
+    }
+
+        .shop-navbar .navbar-brand {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #fff !important;
+            letter-spacing: -0.3px;
+            text-decoration: none;
+        }
+
+            .shop-navbar .navbar-brand span {
+                color: #c8590a;
+            }
+
+        .shop-navbar .nav-link {
+            color: rgba(255,255,255,0.75) !important;
+            font-size: 0.88rem;
+            font-weight: 500;
+            letter-spacing: 0.3px;
+            padding: 0.4rem 0.75rem !important;
+            transition: color 0.2s;
+        }
+
+            .shop-navbar .nav-link:hover {
+                color: #fff !important;
+            }
+
+    .cart-btn {
+        position: relative;
+        font-size: 1.15rem;
+        padding: 0.35rem 0.65rem !important;
+    }
+
+    .cart-count {
+        position: absolute;
+        top: -2px;
+        right: -4px;
+        background: #c8590a;
+        color: #fff;
+        border-radius: 50%;
+        font-size: 0.6rem;
+        font-weight: 700;
+        min-width: 16px;
+        height: 16px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        line-height: 1;
+    }
+
+    .btn-register {
+        background: #c8590a;
+        border: none;
+        color: #fff !important;
+        border-radius: 6px;
+        padding: 0.35rem 1rem !important;
+        font-size: 0.85rem;
+        font-weight: 600;
+        transition: background 0.2s, transform 0.15s;
+    }
+
+        .btn-register:hover {
+            background: #a8470a;
+            transform: translateY(-1px);
+        }
+
+    .dropdown-menu {
+        border: none;
+        box-shadow: 0 8px 32px rgba(0,0,0,0.12);
+        border-radius: 10px;
+        overflow: hidden;
+        padding: 0.4rem 0;
+        font-size: 0.875rem;
+    }
+
+    .dropdown-item {
+        padding: 0.5rem 1.1rem;
+        font-weight: 400;
+        transition: background 0.15s;
+    }
+
+        .dropdown-item:hover {
+            background: #faf8f5;
+        }
+
+        .dropdown-item.text-danger:hover {
+            background: #fff5f5;
+        }
+
+    .user-name-display {
+        font-size: 0.875rem;
+        font-weight: 500;
+    }
+</style>
+
+<!-- HEADER / NAVBAR -->
+<nav class="shop-navbar navbar navbar-expand-lg sticky-top">
+    <div class="container">
+        <a class="navbar-brand" asp-controller="Catalog" asp-action="Index">
+            Rau Ma <span>Shop</span>
+        </a>
+        <button class="navbar-toggler border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navMenu"
+                style="color:rgba(255,255,255,0.7);">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navMenu">
+            <ul class="navbar-nav ms-auto align-items-center gap-1">
+                <!-- Giỏ hàng -->
+                @{
+                    int cartCount = 0;
+                    try { cartCount = SV22T1020337.Shop.ShoppingCartService.GetShoppingCart().Count; } catch { }
+                }
+                <li class="nav-item">
+                    <a class="nav-link cart-btn" asp-controller="Cart" asp-action="Index" title="Giỏ hàng">
+                        🛒
+                        <span id="cart-badge" class="cart-count"
+                              style="@(cartCount > 0 ? "" : "display:none")">
+                            @(cartCount > 0 ? cartCount.ToString() : "")
+                        </span>
+                    </a>
+                </li>
+
+                @if (User.Identity?.IsAuthenticated == true)
+                {
+                    var userData = User.GetUserData();
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle user-name-display" href="#" data-bs-toggle="dropdown">
+                            <span style="opacity:.6; margin-right:3px;">●</span> @userData?.DisplayName
+                        </a>
+                        <ul class="dropdown-menu dropdown-menu-end">
+                            <li><a class="dropdown-item" asp-controller="Account" asp-action="Profile">👤 Thông tin cá nhân</a></li>
+                            <li><a class="dropdown-item" asp-controller="Account" asp-action="ChangePassword">🔑 Đổi mật khẩu</a></li>
+                            <li><hr class="dropdown-divider my-1"></li>
+                            <li><a class="dropdown-item" asp-controller="Order" asp-action="History">📦 Lịch sử đơn hàng</a></li>
+                            <li><hr class="dropdown-divider my-1"></li>
+                            <li><a class="dropdown-item text-danger" asp-controller="Account" asp-action="Logout">← Đăng xuất</a></li>
+                        </ul>
+                    </li>
+                }
+                else
+                {
+                    <li class="nav-item">
+                        <a class="nav-link" asp-controller="Account" asp-action="Login">Đăng nhập</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link btn-register" asp-controller="Account" asp-action="Register">Đăng ký</a>
+                    </li>
+                }
+            </ul>
+        </div>
+    </div>
+</nav>

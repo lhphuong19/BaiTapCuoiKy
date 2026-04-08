@@ -1,0 +1,10 @@
+@{
+    ViewBag.Title = "Truy cập bị từ chối";
+}
+<div class="container py-5 text-center">
+    <div class="fs-1 mb-3">🚫</div>
+    <h3 class="fw-bold">Truy cập bị từ chối</h3>
+    <p class="text-muted">Bạn không có quyền truy cập trang này. Vui lòng đăng nhập với tài khoản phù hợp.</p>
+    <a asp-controller="Account" asp-action="Login" class="btn btn-dark mt-2">Đăng nhập</a>
+    <a asp-controller="Catalog" asp-action="Index" class="btn btn-outline-secondary mt-2 ms-2">Về trang chủ</a>
+</div>

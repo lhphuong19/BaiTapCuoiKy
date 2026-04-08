@@ -8,6 +8,12 @@
         Bổ sung
     </a>
 }
+@if (TempData["Success"] != null)
+{
+    <div class="alert alert-success">
+        @TempData["Success"]
+    </div>
+}
 <div class="card mb-3">
     <div class="card-body">
         <form id="formSearch"

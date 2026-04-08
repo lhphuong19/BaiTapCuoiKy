@@ -37,7 +37,14 @@ public static class PartnerDataService
     /// </returns>
     public static async Task<PagedResult<Supplier>> ListSuppliersAsync(PaginationSearchInput input)
     {
-        return await supplierDB.ListEmployeesAsync(input);
+        try
+        {
+            return await supplierDB.ListEmployeesAsync(input);
+        }
+        catch
+        {
+            throw;
+        }
     }
 
     /// <summary>
@@ -49,7 +56,14 @@ public static class PartnerDataService
     /// </returns>
     public static async Task<Supplier?> GetSupplierAsync(int supplierID)
     {
-        return await supplierDB.GetAsync(supplierID);
+        try
+        {
+            return await supplierDB.GetAsync(supplierID);
+        }
+        catch
+        {
+            throw;
+        }
     }
 
     /// <summary>
@@ -59,8 +73,20 @@ public static class PartnerDataService
     /// <returns>Mã nhà cung cấp được tạo mới.</returns>
     public static async Task<int> AddSupplierAsync(Supplier data)
     {
-        //TODO: Kiểm tra dữ liệu hợp lệ
-        return await supplierDB.AddAsync(data);
+        try
+        {
+            if (data == null) return 0;
+            if (string.IsNullOrWhiteSpace(data.SupplierName)) return 0;
+            if (string.IsNullOrWhiteSpace(data.ContactName)) return 0;
+
+            data.SupplierName = data.SupplierName.Trim();
+            data.ContactName = data.ContactName.Trim();
+            return await supplierDB.AddAsync(data);
+        }
+        catch
+        {
+            throw;
+        }
     }
 
     /// <summary>
@@ -72,8 +98,20 @@ public static class PartnerDataService
     /// </returns>
     public static async Task<bool> UpdateSupplierAsync(Supplier data)
     {
-        //TODO: Kiểm tra dữ liệu hợp lệ
-        return await supplierDB.UpdateAsync(data);
+        try
+        {
+            if (data == null) return false;
+            if (string.IsNullOrWhiteSpace(data.SupplierName)) return false;
+            if (string.IsNullOrWhiteSpace(data.ContactName)) return false;
+
+            data.SupplierName = data.SupplierName.Trim();
+            data.ContactName = data.ContactName.Trim();
+            return await supplierDB.UpdateAsync(data);
+        }
+        catch
+        {
+            throw;
+        }
     }
 
     /// <summary>
@@ -86,10 +124,17 @@ public static class PartnerDataService
     /// </returns>
     public static async Task<bool> DeleteSupplierAsync(int supplierID)
     {
-        if (await supplierDB.IsUsedAsync(supplierID))
-            return false;
+        try
+        {
+            if (await supplierDB.IsUsedAsync(supplierID))
+                return false;
 
-        return await supplierDB.DeleteAsync(supplierID);
+            return await supplierDB.DeleteAsync(supplierID);
+        }
+        catch
+        {
+            throw;
+        }
     }
 
     /// <summary>
@@ -101,7 +146,14 @@ public static class PartnerDataService
     /// </returns>
     public static async Task<bool> IsUsedSupplierAsync(int supplierID)
     {
-        return await supplierDB.IsUsedAsync(supplierID);
+        try
+        {
+            return await supplierDB.IsUsedAsync(supplierID);
+        }
+        catch
+        {
+            throw;
+        }
     }
 
     #endregion
@@ -119,7 +171,14 @@ public static class PartnerDataService
     /// </returns>
     public static async Task<PagedResult<Customer>> ListCustomersAsync(PaginationSearchInput input)
     {
-        return await customerDB.ListEmployeesAsync(input);
+        try
+        {
+            return await customerDB.ListEmployeesAsync(input);
+        }
+        catch
+        {
+            throw;
+        }
     }
 
     /// <summary>
@@ -131,7 +190,14 @@ public static class PartnerDataService
     /// </returns>
     public static async Task<Customer?> GetCustomerAsync(int customerID)
     {
-        return await customerDB.GetAsync(customerID);
+        try
+        {
+            return await customerDB.GetAsync(customerID);
+        }
+        catch
+        {
+            throw;
+        }
     }
 
     /// <summary>
@@ -141,8 +207,23 @@ public static class PartnerDataService
     /// <returns>Mã khách hàng được tạo mới.</returns>
     public static async Task<int> AddCustomerAsync(Customer data)
     {
-        //TODO: Kiểm tra dữ liệu hợp lệ
-        return await customerDB.AddAsync(data);
+        try
+        {
+            if (data == null) return 0;
+            if (string.IsNullOrWhiteSpace(data.CustomerName)) return 0;
+            if (string.IsNullOrWhiteSpace(data.ContactName)) return 0;
+            if (string.IsNullOrWhiteSpace(data.Email)) return 0;
+            if (!await customerDB.ValidateEmailAsync(data.Email, 0)) return 0;
+
+            data.CustomerName = data.CustomerName.Trim();
+            data.ContactName = data.ContactName.Trim();
+            data.Email = data.Email.Trim();
+            return await customerDB.AddAsync(data);
+        }
+        catch
+        {
+            throw;
+        }
     }
 
     /// <summary>
@@ -154,8 +235,23 @@ public static class PartnerDataService
     /// </returns>
     public static async Task<bool> UpdateCustomerAsync(Customer data)
     {
-        //TODO: Kiểm tra dữ liệu hợp lệ
-        return await customerDB.UpdateAsync(data);
+        try
+        {
+            if (data == null) return false;
+            if (string.IsNullOrWhiteSpace(data.CustomerName)) return false;
+            if (string.IsNullOrWhiteSpace(data.ContactName)) return false;
+            if (string.IsNullOrWhiteSpace(data.Email)) return false;
+            if (!await customerDB.ValidateEmailAsync(data.Email, data.CustomerID)) return false;
+
+            data.CustomerName = data.CustomerName.Trim();
+            data.ContactName = data.ContactName.Trim();
+            data.Email = data.Email.Trim();
+            return await customerDB.UpdateAsync(data);
+        }
+        catch
+        {
+            throw;
+        }
     }
 
     /// <summary>
@@ -168,10 +264,17 @@ public static class PartnerDataService
     /// </returns>
     public static async Task<bool> DeleteCustomerAsync(int customerID)
     {
-        if (await customerDB.IsUsedAsync(customerID))
-            return false;
+        try
+        {
+            if (await customerDB.IsUsedAsync(customerID))
+                return false;
 
-        return await customerDB.DeleteAsync(customerID);
+            return await customerDB.DeleteAsync(customerID);
+        }
+        catch
+        {
+            throw;
+        }
     }
 
     /// <summary>
@@ -183,7 +286,14 @@ public static class PartnerDataService
     /// </returns>
     public static async Task<bool> IsUsedCustomerAsync(int customerID)
     {
-        return await customerDB.IsUsedAsync(customerID);
+        try
+        {
+            return await customerDB.IsUsedAsync(customerID);
+        }
+        catch
+        {
+            throw;
+        }
     }
 
     /// <summary>
@@ -197,7 +307,14 @@ public static class PartnerDataService
     /// <returns></returns>
     public static async Task<bool> ValidatelCustomerEmailAsync(string email, int customerID = 0)
     {
-        return await customerDB.ValidateEmailAsync(email, customerID);
+        try
+        {
+            return await customerDB.ValidateEmailAsync(email, customerID);
+        }
+        catch
+        {
+            throw;
+        }
     }
 
     #endregion
@@ -215,7 +332,14 @@ public static class PartnerDataService
     /// </returns>
     public static async Task<PagedResult<Shipper>> ListShippersAsync(PaginationSearchInput input)
     {
-        return await shipperDB.ListEmployeesAsync(input);
+        try
+        {
+            return await shipperDB.ListEmployeesAsync(input);
+        }
+        catch
+        {
+            throw;
+        }
     }
 
     /// <summary>
@@ -227,7 +351,14 @@ public static class PartnerDataService
     /// </returns>
     public static async Task<Shipper?> GetShipperAsync(int shipperID)
     {
-        return await shipperDB.GetAsync(shipperID);
+        try
+        {
+            return await shipperDB.GetAsync(shipperID);
+        }
+        catch
+        {
+            throw;
+        }
     }
 
     /// <summary>
@@ -237,8 +368,18 @@ public static class PartnerDataService
     /// <returns>Mã người giao hàng được tạo mới.</returns>
     public static async Task<int> AddShipperAsync(Shipper data)
     {
-        //TODO: Kiểm tra dữ liệu hợp lệ
-        return await shipperDB.AddAsync(data);
+        try
+        {
+            if (data == null) return 0;
+            if (string.IsNullOrWhiteSpace(data.ShipperName)) return 0;
+
+            data.ShipperName = data.ShipperName.Trim();
+            return await shipperDB.AddAsync(data);
+        }
+        catch
+        {
+            throw;
+        }
     }
 
     /// <summary>
@@ -250,8 +391,18 @@ public static class PartnerDataService
     /// </returns>
     public static async Task<bool> UpdateShipperAsync(Shipper data)
     {
-        //TODO: Kiểm tra dữ liệu hợp lệ
-        return await shipperDB.UpdateAsync(data);
+        try
+        {
+            if (data == null) return false;
+            if (string.IsNullOrWhiteSpace(data.ShipperName)) return false;
+
+            data.ShipperName = data.ShipperName.Trim();
+            return await shipperDB.UpdateAsync(data);
+        }
+        catch
+        {
+            throw;
+        }
     }
 
     /// <summary>
@@ -264,10 +415,17 @@ public static class PartnerDataService
     /// </returns>
     public static async Task<bool> DeleteShipperAsync(int shipperID)
     {
-        if (await shipperDB.IsUsedAsync(shipperID))
-            return false;
+        try
+        {
+            if (await shipperDB.IsUsedAsync(shipperID))
+                return false;
 
-        return await shipperDB.DeleteAsync(shipperID);
+            return await shipperDB.DeleteAsync(shipperID);
+        }
+        catch
+        {
+            throw;
+        }
     }
 
     /// <summary>
@@ -279,7 +437,14 @@ public static class PartnerDataService
     /// </returns>
     public static async Task<bool> IsUsedShipperAsync(int shipperID)
     {
-        return await shipperDB.IsUsedAsync(shipperID);
+        try
+        {
+            return await shipperDB.IsUsedAsync(shipperID);
+        }
+        catch
+        {
+            throw;
+        }
     }
 
     #endregion

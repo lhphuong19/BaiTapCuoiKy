@@ -25,7 +25,14 @@ namespace SV22T1020337.BusinessLayers
         /// <returns></returns>
         public static async Task<List<Province>> ListProvincesAsync()
         {
-            return await provinceDB.ListAsync();
+            try
+            {
+                return await provinceDB.ListAsync();
+            }
+            catch
+            {
+                throw;
+            }
         }
     }
 }

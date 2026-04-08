@@ -1,0 +1,102 @@
+/* ========================================
+   LiteCommerce Shop - Custom CSS
+   ======================================== */
+
+/* ---- Product Card ---- */
+.product-card {
+    transition: transform .2s, box-shadow .2s;
+    border-radius: 10px;
+    overflow: hidden;
+}
+.product-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 24px rgba(0,0,0,.12) !important;
+}
+.product-img {
+    height: 200px;
+    object-fit: cover;
+    transition: transform .3s;
+}
+.product-card:hover .product-img {
+    transform: scale(1.04);
+}
+.product-name {
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    min-height: 2.6em;
+}
+
+/* ---- Timeline (Order status) ---- */
+.timeline-list { padding-left: 0; }
+
+.timeline-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 10px 0;
+    position: relative;
+}
+.timeline-item + .timeline-item::before {
+    content: '';
+    position: absolute;
+    left: 15px;
+    top: -10px;
+    width: 2px;
+    height: 20px;
+    background: #dee2e6;
+}
+.timeline-item.done + .timeline-item::before {
+    background: #198754;
+}
+.timeline-icon {
+    font-size: 1.2rem;
+    width: 32px;
+    text-align: center;
+    flex-shrink: 0;
+}
+.timeline-item.pending .timeline-icon { opacity: .35; }
+.timeline-item.rejected .fw-semibold,
+.timeline-item.cancelled .fw-semibold { color: #6c757d; }
+
+/* ---- Cart badge ---- */
+#cart-badge:empty { display: none; }
+
+/* ---- Thumb photo gallery ---- */
+.thumb-photo {
+    border: 2px solid transparent !important;
+    transition: border-color .2s;
+}
+.thumb-photo:hover { border-color: #212529 !important; }
+
+/* ---- Sticky sidebar ---- */
+@media (max-width: 767px) {
+    .sticky-top { position: relative !important; top: auto !important; }
+}
+
+/* ---- Scrollbar thin ---- */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: #f1f1f1; }
+::-webkit-scrollbar-thumb { background: #aaa; border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: #666; }
+
+/* ---- Pagination ---- */
+.page-link { color: #212529; }
+.page-item.active .page-link {
+    background-color: #212529;
+    border-color: #212529;
+}
+
+/* ---- Alert flash ---- */
+.alert-dismissible { z-index: 1050; }
+
+/* ---- Form controls ---- */
+.form-control:focus, .form-select:focus {
+    border-color: #212529;
+    box-shadow: 0 0 0 .2rem rgba(33,37,41,.15);
+}
+
+/* ---- Buttons ---- */
+.btn-dark:hover { background-color: #333; }
+.btn-warning { color: #212529; }

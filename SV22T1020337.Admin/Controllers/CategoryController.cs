@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using SV22T1020337.BusinessLayers;
 using SV22T1020337.Models.Catalog;
 using SV22T1020337.Models.Common;
@@ -10,6 +11,7 @@ namespace SV22T1020337.Admin.Controllers
     /// <summary>
     /// Cung cấp các chức năng quản lý dữ liệu liên quan đến loại hàng
     /// </summary>
+    [Authorize]
     public class CategoryController : Controller
     {
         private const string CATEGORY_SEARCH = "CategorySearchInput";
@@ -19,22 +21,38 @@ namespace SV22T1020337.Admin.Controllers
         /// <returns></returns>
         public IActionResult Index()
         {
-            var input = ApplicationContext.GetSessionData<PaginationSearchInput>(CATEGORY_SEARCH);
-            if (input == null)
-                input = new PaginationSearchInput()
-                {
-                    Page = 1,
-                    PageSize = ApplicationContext.PageSize,
-                    SearchValue = ""
-                };
-            return View(input);
+            try
+            {
+                var input = ApplicationContext.GetSessionData<PaginationSearchInput>(CATEGORY_SEARCH);
+                if (input == null)
+                    input = new PaginationSearchInput()
+                    {
+                        Page = 1,
+                        PageSize = ApplicationContext.PageSize,
+                        SearchValue = ""
+                    };
+                return View(input);
+            }
+            catch (Exception ex)
+            {
+                ModelState.AddModelError(string.Empty, "Hệ thống đang xảy ra lỗi, vui lòng thử lại sau");
+                return RedirectToAction("Index", "Home");
+            }
         }
 
         public async Task<IActionResult> Search(PaginationSearchInput input)
         {
-            var result = await CatalogDataService.ListCategoriesAsync(input);
-            ApplicationContext.SetSessionData(CATEGORY_SEARCH, input);
-            return View(result);
+            try
+            {
+                var result = await CatalogDataService.ListCategoriesAsync(input);
+                ApplicationContext.SetSessionData(CATEGORY_SEARCH, input);
+                return View(result);
+            }
+            catch (Exception ex)
+            {
+                ModelState.AddModelError(string.Empty, "Hệ thống đang xảy ra lỗi, vui lòng thử lại sau");
+                return RedirectToAction("Index");
+            }
         }
 
         /// <summary>
@@ -43,12 +61,20 @@ namespace SV22T1020337.Admin.Controllers
         /// <returns></returns>
         public IActionResult Create()
         {
-            ViewBag.Title = "Bổ sung loại hàng";
-            var model = new Category()
+            try
             {
-                CategoryID = 0
-            };
-            return View("Edit", model);
+                ViewBag.Title = "Bổ sung loại hàng";
+                var model = new Category()
+                {
+                    CategoryID = 0
+                };
+                return View("Edit", model);
+            }
+            catch (Exception ex)
+            {
+                ModelState.AddModelError(string.Empty, "Hệ thống đang xảy ra lỗi, vui lòng thử lại sau");
+                return RedirectToAction("Index");
+            }
         }
 
         /// <summary>
@@ -58,11 +84,19 @@ namespace SV22T1020337.Admin.Controllers
         /// <returns></returns>
         public async Task<IActionResult> Edit(int id)
         {
-            ViewBag.Title = "Cập nhật loại hàng";
-            var model = await CatalogDataService.GetCategoryAsync(id);
-            if (model == null)
+            try
+            {
+                ViewBag.Title = "Cập nhật loại hàng";
+                var model = await CatalogDataService.GetCategoryAsync(id);
+                if (model == null)
+                    return RedirectToAction("Index");
+                return View(model);
+            }
+            catch (Exception ex)
+            {
+                ModelState.AddModelError(string.Empty, "Hệ thống đang xảy ra lỗi, vui lòng thử lại sau");
                 return RedirectToAction("Index");
-            return View(model);
+            }
         }
 
         /// <summary>
@@ -72,22 +106,30 @@ namespace SV22T1020337.Admin.Controllers
         /// <returns></returns>
         public async Task<IActionResult> Delete(int id)
         {
-            ViewBag.Title = "Xóa loại hàng";
-            if (Request.Method == "POST")
+            try
             {
-                await CatalogDataService.DeleteCategoryAsync(id);
+                ViewBag.Title = "Xóa loại hàng";
+                if (Request.Method == "POST")
+                {
+                    await CatalogDataService.DeleteCategoryAsync(id);
+                    return RedirectToAction("Index");
+                }
+
+
+                //GET
+                var model = await CatalogDataService.GetCategoryAsync(id);
+                if (model == null)
+                    return RedirectToAction("Index");
+
+                ViewBag.CanDelete = !await CatalogDataService.IsUsedCategoryAsync(id);
+
+                return View(model);
+            }
+            catch (Exception ex)
+            {
+                ModelState.AddModelError(string.Empty, "Hệ thống đang xảy ra lỗi, vui lòng thử lại sau");
                 return RedirectToAction("Index");
             }
-
-
-            //GET
-            var model = await CatalogDataService.GetCategoryAsync(id);
-            if (model == null)
-                return RedirectToAction("Index");
-
-            ViewBag.CanDelete = !await CatalogDataService.IsUsedCategoryAsync(id);
-
-            return View(model);
         }
 
         [HttpPost]

@@ -29,6 +29,16 @@ namespace SV22T1020337.DataLayers.SQLServer
         {
             using var connection = new SqlConnection(_connectionString);
 
+            if (input.MinPrice > 0 && input.MaxPrice > 0)
+            {
+                if (input.MinPrice > input.MaxPrice)
+                {
+                    var temp = input.MinPrice;
+                    input.MinPrice = input.MaxPrice;
+                    input.MaxPrice = temp;
+                }
+            }
+
             var parameters = new
             {
                 search = $"%{input.SearchValue}%",
@@ -41,10 +51,10 @@ namespace SV22T1020337.DataLayers.SQLServer
             };
 
             string where = @" WHERE ProductName LIKE @search
-                              AND (@CategoryID = 0 OR CategoryID = @CategoryID)
-                              AND (@SupplierID = 0 OR SupplierID = @SupplierID)
-                              AND (@MinPrice = 0 OR Price >= @MinPrice)
-                              AND (@MaxPrice = 0 OR Price <= @MaxPrice) ";
+                  AND (@CategoryID = 0 OR CategoryID = @CategoryID)
+                  AND (@SupplierID = 0 OR SupplierID = @SupplierID)
+                  AND (@MinPrice = 0 OR Price >= @MinPrice)
+                  AND (@MaxPrice = 0 OR Price <= @MaxPrice) ";
 
             int rowCount = await connection.ExecuteScalarAsync<int>(
                 $"SELECT COUNT(*) FROM Products {where}", parameters);

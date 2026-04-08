@@ -1,0 +1,68 @@
+@model LoginModel
+@{
+    ViewBag.Title = "Đăng nhập";
+    Layout = "_Layout";
+}
+
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-5 col-lg-4">
+            <div class="card border-0 shadow">
+                <div class="card-body p-4">
+                    <div class="text-center mb-4">
+                        <div class="fs-1 mb-2">🛒</div>
+                        <h4 class="fw-bold">Đăng nhập</h4>
+                        <p class="text-muted small">Chào mừng bạn quay trở lại!</p>
+                    </div>
+
+                    @if (!ViewData.ModelState.IsValid && ViewData.ModelState.ErrorCount > 0)
+                    {
+                        <div asp-validation-summary="ModelOnly" class="alert alert-danger py-2 small"></div>
+                    }
+
+                    <form asp-action="Login" asp-controller="Account" method="post">
+                        <div class="mb-3">
+                            <label asp-for="Email" class="form-label fw-semibold"></label>
+                            <input asp-for="Email" class="form-control"
+                                   placeholder="email@example.com" autocomplete="email" />
+                            <span asp-validation-for="Email" class="text-danger small"></span>
+                        </div>
+
+                        <div class="mb-4">
+                            <label asp-for="Password" class="form-label fw-semibold"></label>
+                            <div class="input-group">
+                                <input asp-for="Password" class="form-control" id="passwordInput"
+                                       placeholder="••••••••" autocomplete="current-password" />
+                                <button class="btn btn-outline-secondary" type="button" id="togglePwd">👁</button>
+                            </div>
+                            <span asp-validation-for="Password" class="text-danger small"></span>
+                        </div>
+
+                        <div class="d-grid mb-3">
+                            <button type="submit" class="btn btn-dark fw-bold py-2">Đăng nhập</button>
+                        </div>
+                    </form>
+
+                    <hr class="my-3" />
+
+                    <div class="text-center small">
+                        Chưa có tài khoản?
+                        <a asp-controller="Account" asp-action="Register" class="text-dark fw-bold text-decoration-none">
+                            Đăng ký ngay
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+<script>
+document.getElementById('togglePwd').addEventListener('click', function () {
+    const input = document.getElementById('passwordInput');
+    input.type  = input.type === 'password' ? 'text' : 'password';
+    this.textContent = input.type === 'password' ? '👁' : '🙈';
+});
+</script>
+}

@@ -33,8 +33,9 @@ namespace SV22T1020337.DataLayers.SQLServer
                         '' AS Photo,
                         'Customer' AS RoleNames
                   FROM Customers
-                  WHERE Email = @userName
-                        AND Password = @password",
+                  WHERE Email = @userName 
+                          AND Password = @password 
+                          AND IsLocked = 0",
                 new { userName, password });
         }
 

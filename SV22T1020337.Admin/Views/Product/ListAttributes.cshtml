@@ -1,5 +1,9 @@
-﻿@{
+﻿@model List<ProductAttribute>
+@{
     Layout = null;
+    // Ưu tiên lấy ProductId từ ViewBag (được truyền từ Edit action),
+    // tránh trường hợp productId = 0 khi danh sách thuộc tính còn rỗng
+    int productId = ViewBag.ProductId != null ? (int)ViewBag.ProductId : (Model.FirstOrDefault()?.ProductID ?? 0);
 }
 <div class="row justify-content-center">
     <div class="col-12">
@@ -13,7 +17,7 @@
                         </h6>
                     </div>
                     <div class="col text-end">
-                        <a class="btn btn-sm btn-primary" href="~/Product/CreateAttribute/123">
+                        <a class="btn btn-sm btn-primary" href="~/Product/EditAttribute/@productId">
                             <i class="bi bi-plus"></i>
                             Thêm thuộc tính
                         </a>
@@ -22,35 +26,50 @@
             </div>
 
             <div class="card-body p-1">
-                <table class="table table-bordered table-hover mb-0">
-                    <thead class="table-secondary">
-                        <tr>
-                            <th>Tên thuộc tính</th>
-                            <th>Giá trị</th>
-                            <th style="width:120px" class="text-center">Thứ tự</th>
-                            <th style="width:100px"></th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @for (int i = 1; i <= 10; i++)
-                        {
+                @if (!Model.Any())
+                {
+                    <div class="text-center text-muted py-3">
+                        <i class="bi bi-list-check fs-3 d-block mb-1"></i>
+                        Chưa có thuộc tính nào
+                    </div>
+                }
+                else
+                {
+                    <table class="table table-bordered table-hover mb-0">
+                        <thead class="table-secondary">
                             <tr>
-                                <td>Màu sắc</td>
-                                <td>Đỏ</td>
-                                <td class="text-center">@i</td>
-                                <td class="text-center text-nowrap">
-                                    <a class="btn btn-sm btn-primary" href="~/Product/EditAttribute/123?attributeId=456">
-                                        <i class="bi bi-pencil"></i>
-                                    </a>
-                                    <a class="btn btn-sm btn-danger" href="~/Product/DeleteAttribute/123?attributeId=456">
-                                        <i class="bi bi-trash"></i>
-                                    </a>
-                                </td>
+                                <th>Tên thuộc tính</th>
+                                <th>Giá trị</th>
+                                <th style="width:120px" class="text-center">Thứ tự</th>
+                                <th style="width:100px"></th>
                             </tr>
-                        }
-                    </tbody>
-                </table>
+                        </thead>
+                        <tbody>
+                            @foreach (var attr in Model)
+                            {
+                                <tr>
+                                    <td>@attr.AttributeName</td>
+                                    <td>@attr.AttributeValue</td>
+                                    <td class="text-center">@attr.DisplayOrder</td>
+                                    <td class="text-center text-nowrap">
+                                        <a class="btn btn-sm btn-primary"
+                                           href="~/Product/EditAttribute/@productId?attributeId=@attr.AttributeID"
+                                           title="Chỉnh sửa">
+                                            <i class="bi bi-pencil"></i>
+                                        </a>
+                                        <a class="btn btn-sm btn-danger"
+                                           href="~/Product/DeleteAttribute/@productId?attributeId=@attr.AttributeID"
+                                           title="Xóa">
+                                            <i class="bi bi-trash"></i>
+                                        </a>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                }
             </div>
         </div>
     </div>
 </div>
+

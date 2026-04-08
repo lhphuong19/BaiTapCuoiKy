@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using SV22T1020337.BusinessLayers;
 using SV22T1020337.Models.Common;
 using SV22T1020337.Models.HR;
@@ -9,6 +10,7 @@ namespace SV22T1020337.Admin.Controllers
     /// <summary>
     /// Cung cấp các chức năng quản lý dữ liệu liên quan đến Nhân viên
     /// </summary>
+    [Authorize]
     public class EmployeeController : Controller
     {
         private const string EMPLOYEE_SEARCH = "EmployeeSearchInput";
@@ -18,22 +20,38 @@ namespace SV22T1020337.Admin.Controllers
         /// <returns></returns>
         public IActionResult Index()
         {
-            var input = ApplicationContext.GetSessionData<PaginationSearchInput>(EMPLOYEE_SEARCH);
-            if (input == null)
-                input = new PaginationSearchInput()
-                {
-                    Page = 1,
-                    PageSize = ApplicationContext.PageSize,
-                    SearchValue = ""
-                };
-            return View(input);
+            try
+            {
+                var input = ApplicationContext.GetSessionData<PaginationSearchInput>(EMPLOYEE_SEARCH);
+                if (input == null)
+                    input = new PaginationSearchInput()
+                    {
+                        Page = 1,
+                        PageSize = ApplicationContext.PageSize,
+                        SearchValue = ""
+                    };
+                return View(input);
+            }
+            catch (Exception ex)
+            {
+                ModelState.AddModelError(string.Empty, "Hệ thống đang xảy ra lỗi, vui lòng thử lại sau");
+                return RedirectToAction("Index", "Home");
+            }
         }
 
         public async Task<IActionResult> Search(PaginationSearchInput input)
         {
-            var result = await HRDataService.ListEmployeesAsync(input);
-            ApplicationContext.SetSessionData(EMPLOYEE_SEARCH, input);
-            return View(result);
+            try
+            {
+                var result = await HRDataService.ListEmployeesAsync(input);
+                ApplicationContext.SetSessionData(EMPLOYEE_SEARCH, input);
+                return View(result);
+            }
+            catch (Exception ex)
+            {
+                ModelState.AddModelError(string.Empty, "Hệ thống đang xảy ra lỗi, vui lòng thử lại sau");
+                return RedirectToAction("Index");
+            }
         }
 
         /// <summary>
@@ -42,23 +60,39 @@ namespace SV22T1020337.Admin.Controllers
         /// <returns></returns>
         public IActionResult Create()
         {
-            ViewBag.Title = "Bổ sung nhân viên";
-            var model = new Employee()
+            try
             {
-                EmployeeID = 0,
-                IsWorking = true
-            };
-            return View("Edit", model);
+                ViewBag.Title = "Bổ sung nhân viên";
+                var model = new Employee()
+                {
+                    EmployeeID = 0,
+                    IsWorking = true
+                };
+                return View("Edit", model);
+            }
+            catch (Exception ex)
+            {
+                ModelState.AddModelError(string.Empty, "Hệ thống đang xảy ra lỗi, vui lòng thử lại sau");
+                return RedirectToAction("Index");
+            }
         }
 
         public async Task<IActionResult> Edit(int id)
         {
-            ViewBag.Title = "Cập nhật thông tin nhân viên";
-            var model = await HRDataService.GetEmployeeAsync(id);
-            if (model == null)
-                return RedirectToAction("Index");
+            try
+            {
+                ViewBag.Title = "Cập nhật thông tin nhân viên";
+                var model = await HRDataService.GetEmployeeAsync(id);
+                if (model == null)
+                    return RedirectToAction("Index");
 
-            return View(model);
+                return View(model);
+            }
+            catch (Exception ex)
+            {
+                ModelState.AddModelError(string.Empty, "Hệ thống đang xảy ra lỗi, vui lòng thử lại sau");
+                return RedirectToAction("Index");
+            }
         }
 
         [HttpPost]
@@ -108,9 +142,9 @@ namespace SV22T1020337.Admin.Controllers
                 }
                 return RedirectToAction("Index");
             }
-            catch //(Exception ex)
+            catch (Exception ex)
             {
-                //TODO: Ghi log lỗi căn cứ vào ex.Message và ex.StackTrace
+                // Ghi log lỗi căn cứ vào ex.Message và ex.StackTrace
                 ModelState.AddModelError(string.Empty, "Hệ thống đang bận hoặc dữ liệu không hợp lệ. Vui lòng kiểm tra dữ liệu hoặc thử lại sau");
                 return View("Edit", data);
             }
@@ -121,10 +155,29 @@ namespace SV22T1020337.Admin.Controllers
         /// </summary>
         /// <param name="id">Mã nhân viên cần xóa</param>
         /// <returns></returns>
-        public IActionResult Delete(int id)
+        public async Task<IActionResult> Delete(int id)
         {
-            ViewBag.Title = "Xóa nhân viên";
-            return View();
+            try
+            {
+                ViewBag.Title = "Xóa nhân viên";
+                if (Request.Method == "POST")
+                {
+                    await HRDataService.DeleteEmployeeAsync(id);
+                    return RedirectToAction("Index");
+                }
+
+                var model = await HRDataService.GetEmployeeAsync(id);
+                if (model == null)
+                    return RedirectToAction("Index");
+
+                ViewBag.CanDelete = !await HRDataService.IsUsedEmployeeAsync(id);
+                return View(model);
+            }
+            catch (Exception ex)
+            {
+                ModelState.AddModelError(string.Empty, "Hệ thống đang xảy ra lỗi, vui lòng thử lại sau");
+                return RedirectToAction("Index");
+            }
         }
 
         /// <summary>
@@ -132,10 +185,92 @@ namespace SV22T1020337.Admin.Controllers
         /// </summary>
         /// <param name="id">Mã nhân viên có account cần thay dổi mật khẩu</param>
         /// <returns></returns>
-        public IActionResult ChangePassword(int id)
+        public async Task<IActionResult> ChangePassword(int id)
         {
-            ViewBag.Title = "Đổi mật khẩu nhân viên";
-            return View();
+            try
+            {
+                var employee = await HRDataService.GetEmployeeAsync(id);
+                if (employee == null)
+                    return RedirectToAction("Index");
+
+                ViewBag.EmployeeID = id;
+                ViewBag.EmployeeName = employee.FullName;
+
+                ViewBag.IsWorking = employee.IsWorking;
+
+                return View();
+            }
+            catch
+            {
+                ModelState.AddModelError("", "Hệ thống lỗi");
+                return RedirectToAction("Index");
+            }
+        }
+
+        /// <summary>
+        /// Xử lý đổi mật khẩu cho nhân viên
+        /// </summary>
+        [HttpPost]
+        public async Task<IActionResult> ChangePassword(int id, string newPassword, string confirmPassword)
+        {
+            try
+            {
+                // Validate
+                if (string.IsNullOrEmpty(newPassword))
+                    ModelState.AddModelError("newPassword", "Vui lòng nhập mật khẩu");
+
+                if (string.IsNullOrEmpty(confirmPassword))
+                    ModelState.AddModelError("confirmPassword", "Vui lòng nhập lại mật khẩu");
+
+                if (newPassword != confirmPassword)
+                    ModelState.AddModelError("confirmPassword", "Mật khẩu xác nhận không đúng");
+
+                // Lấy employee sớm để dùng lại
+                var employee = await HRDataService.GetEmployeeAsync(id);
+                if (employee == null)
+                    return RedirectToAction("Index");
+
+                if (!ModelState.IsValid)
+                {
+                    ViewBag.EmployeeID = id;
+                    ViewBag.EmployeeName = employee.FullName;
+                    ViewBag.EmployeeEmail = employee.Email;
+                    ViewBag.IsWorking = employee.IsWorking;
+                    return View();
+                }
+
+                // Hash
+                string newPassMD5 = CryptHelper.HashMD5(newPassword);
+
+                // Đổi mật khẩu
+                bool result = await SecurityDataService.ChangePasswordAsync(employee.Email, newPassMD5);
+
+                if (!result)
+                {
+                    ModelState.AddModelError("", "Không thể đổi mật khẩu");
+                    ViewBag.EmployeeID = id;
+                    ViewBag.EmployeeName = employee.FullName;
+                    ViewBag.EmployeeEmail = employee.Email;
+                    ViewBag.IsWorking = employee.IsWorking;
+                    return View();
+                }
+
+                ModelState.Clear();
+
+                ViewBag.Success = "Đổi mật khẩu nhân viên thành công";
+
+                ViewBag.EmployeeID = id;
+                ViewBag.EmployeeName = employee.FullName;
+                ViewBag.EmployeeEmail = employee.Email;
+                ViewBag.IsWorking = employee.IsWorking;
+
+                return View();
+            }
+            catch
+            {
+                ModelState.AddModelError("", "Hệ thống đang xảy ra lỗi");
+                return View();
+            }
         }
 
         /// <summary>
@@ -145,8 +280,16 @@ namespace SV22T1020337.Admin.Controllers
         /// <returns></returns>
         public IActionResult ChangeRole(int id)
         {
-            ViewBag.Title = "Thay đổi vai trò của nhân viên";
-            return View();
+            try
+            {
+                ViewBag.Title = "Thay đổi vai trò của nhân viên";
+                return View();
+            }
+            catch (Exception ex)
+            {
+                ModelState.AddModelError(string.Empty, "Hệ thống đang xảy ra lỗi, vui lòng thử lại sau");
+                return RedirectToAction("Index");
+            }
         }
     }
 }

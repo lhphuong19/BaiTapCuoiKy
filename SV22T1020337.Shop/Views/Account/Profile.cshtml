@@ -1,0 +1,147 @@
+@model ProfileModel
+@{
+    ViewBag.Title = "Thông tin cá nhân";
+}
+
+<style>
+    .input-validation-error {
+        border: 1px solid #dc3545;
+        background-color: #fff0f0;
+    }
+</style>
+
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-7 col-lg-6">
+
+            <!-- Tabs -->
+            <ul class="nav nav-pills mb-4 gap-2">
+                <li class="nav-item">
+                    <a class="nav-link active bg-dark" asp-action="Profile">👤 Thông tin cá nhân</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link text-dark" asp-action="ChangePassword">🔒 Đổi mật khẩu</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link text-dark" asp-controller="Order" asp-action="History">📋 Đơn hàng</a>
+                </li>
+            </ul>
+
+            <div class="card border-0 shadow">
+                <div class="card-header bg-dark text-white fw-bold">
+                    Thông tin cá nhân
+                </div>
+
+                <div class="card-body p-4">
+
+                    <!-- SUCCESS -->
+                    @if (TempData["Message"] != null)
+                    {
+                        <div class="alert alert-success py-2 small">
+                            @TempData["Message"]
+                        </div>
+                    }
+
+                    <!-- ERROR SUMMARY (không trùng) -->
+                    @if (ViewData.ModelState.ErrorCount > 0)
+                    {
+                        <div asp-validation-summary="ModelOnly"
+                             class="alert alert-danger py-2 small"></div>
+                    }
+
+                    <form asp-action="Profile" method="post" novalidate>
+                        <input asp-for="CustomerID" type="hidden" />
+
+                        <!-- NAME -->
+                        <div class="mb-3">
+                            <label asp-for="CustomerName" class="form-label fw-semibold"></label>
+                            <input asp-for="CustomerName" class="form-control" placeholder="Nhập tên khách hàng" />
+                            <span asp-validation-for="CustomerName" class="text-danger small"></span>
+                        </div>
+
+                        <!-- CONTACT -->
+                        <div class="mb-3">
+                            <label asp-for="ContactName" class="form-label fw-semibold"></label>
+                            <input asp-for="ContactName" class="form-control" placeholder="Tên giao dịch" />
+                            <span asp-validation-for="ContactName" class="text-danger small"></span>
+                        </div>
+
+                        <!-- PHONE + PROVINCE -->
+                        <div class="row g-3 mb-3">
+                            <div class="col-md-6">
+                                <label asp-for="Phone" class="form-label fw-semibold"></label>
+                                <input asp-for="Phone" class="form-control"
+                                       placeholder="0901234567"
+                                       oninput="this.value=this.value.replace(/[^0-9]/g,'')" />
+                                <span asp-validation-for="Phone" class="text-danger small"></span>
+                            </div>
+                            <div class="col-md-6">
+                                <label asp-for="Province" class="form-label fw-semibold"></label>
+                                <select asp-for="Province"
+                                        class="form-select"
+                                        asp-items="await SelectListHelper.ProvincesAsync()">
+                                    <option value="">-- Tỉnh/Thành phố --</option>
+                                </select>
+
+                                <span asp-validation-for="Province" class="text-danger small"></span>
+                            </div>
+                        </div>
+
+                        <!-- ADDRESS -->
+                        <div class="mb-3">
+                            <label asp-for="Address" class="form-label fw-semibold"></label>
+                            <input asp-for="Address" class="form-control" placeholder="Địa chỉ" />
+                            <span asp-validation-for="Address" class="text-danger small"></span>
+                        </div>
+
+                        <!-- EMAIL -->
+                        <div class="mb-4">
+                            <label asp-for="Email" class="form-label fw-semibold"></label>
+                            <input asp-for="Email" class="form-control" placeholder="email@example.com" />
+                            <div class="form-text small text-muted">
+                                Email cũng là tên đăng nhập của bạn.
+                            </div>
+                            <span asp-validation-for="Email" class="text-danger small"></span>
+                        </div>
+
+                        <!-- BUTTON -->
+                        <div class="d-grid">
+                            <button type="submit"
+                                    class="btn btn-dark fw-bold py-2"
+                                    onclick="this.disabled=true;this.form.submit();">
+                                Lưu thay đổi
+                            </button>
+                        </div>
+
+                    </form>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+
+    <script>
+        // Focus input lỗi
+        document.addEventListener("DOMContentLoaded", function () {
+            const firstError = document.querySelector(".input-validation-error");
+            if (firstError) firstError.focus();
+        });
+
+        // Xóa highlight khi nhập lại
+        document.querySelectorAll("input").forEach(input => {
+            input.addEventListener("input", () => {
+                input.classList.remove("input-validation-error");
+            });
+        });
+
+        // Auto hide success
+        setTimeout(() => {
+            const alert = document.querySelector(".alert-success");
+            if (alert) alert.style.display = "none";
+        }, 3000);
+    </script>
+}

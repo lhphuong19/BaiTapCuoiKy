@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using SV22T1020337.BusinessLayers;
 using SV22T1020337.Models.Common;
 using SV22T1020337.Models.Partner;
@@ -9,6 +10,7 @@ namespace SV22T1020337.Admin.Controllers
     /// <summary>
     /// cung cấp các chức năng quản lý dữ liệu liên quan đến nhà cung cấp
     /// </summary>
+    [Authorize]
     public class SupplierController : Controller
     {
         private const string SUPPLIER_SEARCH = "SupplierSearchInput";
@@ -18,22 +20,38 @@ namespace SV22T1020337.Admin.Controllers
         /// <returns></returns>
         public IActionResult Index()
         {
-            var input = ApplicationContext.GetSessionData<PaginationSearchInput>(SUPPLIER_SEARCH);
-            if (input == null)
-                input = new PaginationSearchInput()
-                {
-                    Page = 1,
-                    PageSize = ApplicationContext.PageSize,
-                    SearchValue = ""
-                };
-            return View(input);
+            try
+            {
+                var input = ApplicationContext.GetSessionData<PaginationSearchInput>(SUPPLIER_SEARCH);
+                if (input == null)
+                    input = new PaginationSearchInput()
+                    {
+                        Page = 1,
+                        PageSize = ApplicationContext.PageSize,
+                        SearchValue = ""
+                    };
+                return View(input);
+            }
+            catch (Exception ex)
+            {
+                ModelState.AddModelError(string.Empty, "Hệ thống đang xảy ra lỗi, vui lòng thử lại sau");
+                return RedirectToAction("Index", "Home");
+            }
         }
 
         public async Task<IActionResult> Search(PaginationSearchInput input)
         {
-            var result = await PartnerDataService.ListSuppliersAsync(input);
-            ApplicationContext.SetSessionData(SUPPLIER_SEARCH, input);
-            return View(result);
+            try
+            {
+                var result = await PartnerDataService.ListSuppliersAsync(input);
+                ApplicationContext.SetSessionData(SUPPLIER_SEARCH, input);
+                return View(result);
+            }
+            catch (Exception ex)
+            {
+                ModelState.AddModelError(string.Empty, "Hệ thống đang xảy ra lỗi, vui lòng thử lại sau");
+                return RedirectToAction("Index");
+            }
         }
 
         /// <summary>
@@ -42,12 +60,20 @@ namespace SV22T1020337.Admin.Controllers
         /// <returns></returns>
         public IActionResult Create()
         {
-            ViewBag.Title = "Bổ sung nhà cung cấp";
-            var model = new Supplier()
+            try
             {
-                SupplierID = 0
-            };
-            return View("Edit", model);
+                ViewBag.Title = "Bổ sung nhà cung cấp";
+                var model = new Supplier()
+                {
+                    SupplierID = 0
+                };
+                return View("Edit", model);
+            }
+            catch (Exception ex)
+            {
+                ModelState.AddModelError(string.Empty, "Hệ thống đang xảy ra lỗi, vui lòng thử lại sau");
+                return RedirectToAction("Index");
+            }
         }
 
         /// <summary>
@@ -55,13 +81,21 @@ namespace SV22T1020337.Admin.Controllers
         /// </summary>
         /// <param name="id">Mã nhà cung cấp cần cập nhật thông tin</param>
         /// <returns></returns>
-        public async Task<IActionResult> Edit(int id) 
-        { 
-            ViewBag.Title = "Cập nhật thông tin nhà cung cấp";
-            var model = await PartnerDataService.GetSupplierAsync(id);
-            if (model == null)
+        public async Task<IActionResult> Edit(int id)
+        {
+            try
+            {
+                ViewBag.Title = "Cập nhật thông tin nhà cung cấp";
+                var model = await PartnerDataService.GetSupplierAsync(id);
+                if (model == null)
+                    return RedirectToAction("Index");
+                return View(model);
+            }
+            catch (Exception ex)
+            {
+                ModelState.AddModelError(string.Empty, "Hệ thống đang xảy ra lỗi, vui lòng thử lại sau");
                 return RedirectToAction("Index");
-            return View(model);
+            }
         }
 
         /// <summary>
@@ -71,21 +105,29 @@ namespace SV22T1020337.Admin.Controllers
         /// <returns></returns>
         public async Task<IActionResult> Delete(int id)
         {
-            if (Request.Method == "POST")
+            try
             {
-                await PartnerDataService.DeleteSupplierAsync(id);
+                if (Request.Method == "POST")
+                {
+                    await PartnerDataService.DeleteSupplierAsync(id);
+                    return RedirectToAction("Index");
+                }
+
+
+                //GET
+                var model = await PartnerDataService.GetSupplierAsync(id);
+                if (model == null)
+                    return RedirectToAction("Index");
+
+                ViewBag.CanDelete = !await PartnerDataService.IsUsedSupplierAsync(id);
+
+                return View(model);
+            }
+            catch (Exception ex)
+            {
+                ModelState.AddModelError(string.Empty, "Hệ thống đang xảy ra lỗi, vui lòng thử lại sau");
                 return RedirectToAction("Index");
             }
-
-
-            //GET
-            var model = await PartnerDataService.GetSupplierAsync(id);
-            if (model == null)
-                return RedirectToAction("Index");
-
-            ViewBag.CanDelete = !await PartnerDataService.IsUsedSupplierAsync(id);
-
-            return View(model);
         }
 
         [HttpPost]
@@ -133,13 +175,9 @@ namespace SV22T1020337.Admin.Controllers
             }
             catch (Exception ex)
             {
-                //Ghi log lỗi với các thông tin nằm trong exception
-                //ex.Message
-                //ex.StackTrace
                 ModelState.AddModelError("error", "Hệ thống tạm thời đang bận, vui lòng thử lại sau vài ngày");
                 return View("Edit", data);
             }
         }
-
-     }
+    }
 }

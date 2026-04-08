@@ -1,0 +1,107 @@
+@model SV22T1020337.Models.Common.PagedResult<SV22T1020337.Models.Sales.OrderViewInfo>
+@{
+    string StatusBadge(SV22T1020337.Models.Sales.OrderStatusEnum? status) => status switch
+    {
+        SV22T1020337.Models.Sales.OrderStatusEnum.New       => "<span class='badge bg-primary'>🆕 Chờ xử lý</span>",
+        SV22T1020337.Models.Sales.OrderStatusEnum.Accepted  => "<span class='badge bg-info text-dark'>✅ Đã duyệt</span>",
+        SV22T1020337.Models.Sales.OrderStatusEnum.Shipping  => "<span class='badge bg-warning text-dark'>🚚 Đang giao</span>",
+        SV22T1020337.Models.Sales.OrderStatusEnum.Completed => "<span class='badge bg-success'>🎉 Hoàn thành</span>",
+        SV22T1020337.Models.Sales.OrderStatusEnum.Cancelled => "<span class='badge bg-secondary'>❌ Đã hủy</span>",
+        SV22T1020337.Models.Sales.OrderStatusEnum.Rejected  => "<span class='badge bg-danger'>⛔ Từ chối</span>",
+        _ => "<span class='badge bg-light text-dark'>—</span>"
+    };
+}
+
+@if (Model == null || !Model.DataItems.Any())
+{
+    <div class="text-center py-5">
+        <div class="fs-1 mb-2">📋</div>
+        <h6 class="text-muted">Chưa có đơn hàng nào.</h6>
+        <a asp-controller="Catalog" asp-action="Index" class="btn btn-dark btn-sm mt-2">Mua sắm ngay</a>
+    </div>
+}
+else
+{
+    <div class="card border-0 shadow-sm">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="table-dark">
+                    <tr>
+                        <th>Mã ĐH</th>
+                        <th>Ngày đặt</th>
+                        <th>Địa chỉ giao</th>
+                        <th class="text-center">Trạng thái</th>
+                        <th class="text-end">Tổng tiền</th>
+                        <th class="text-center">Thao tác</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var order in Model.DataItems)
+                    {
+                        <tr>
+                            <td>
+                                <a class="fw-bold text-decoration-none"
+                                   asp-controller="Order" asp-action="Detail" asp-route-id="@order.OrderID">
+                                    #@order.OrderID
+                                </a>
+                            </td>
+                            <td>
+                                <span class="text-muted small">@order.OrderTime.ToString("dd/MM/yyyy")</span><br />
+                                <span class="text-muted small">@order.OrderTime.ToString("HH:mm")</span>
+                            </td>
+                            <td>
+                                <small class="text-muted">
+                                    @(string.IsNullOrEmpty(order.DeliveryAddress) ? "—" : order.DeliveryAddress)
+                                    @(!string.IsNullOrEmpty(order.DeliveryProvince) ? ", " + order.DeliveryProvince : "")
+                                </small>
+                            </td>
+                            <td class="text-center">
+                                @Html.Raw(StatusBadge(order.Status))
+                            </td>
+                            <td class="text-end fw-bold text-danger">
+                                @order.TotalAmount.ToString("N0") đ
+                            </td>
+                            <td class="text-center">
+                                <div class="d-flex gap-1 justify-content-center">
+                                    <a class="btn btn-sm btn-outline-dark"
+                                       asp-controller="Order" asp-action="Detail" asp-route-id="@order.OrderID"
+                                       title="Xem chi tiết">🔍</a>
+                                    @if (order.Status == SV22T1020337.Models.Sales.OrderStatusEnum.New)
+                                    {
+                                        <button class="btn btn-sm btn-outline-danger btn-cancel-order"
+                                                data-id="@order.OrderID" title="Hủy đơn hàng">❌</button>
+                                    }
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- PHÂN TRANG -->
+    @if (Model.PageCount > 1)
+    {
+        <nav class="mt-3">
+            <ul class="pagination justify-content-center pagination-sm">
+                <li class="page-item @(Model.Page <= 1 ? "disabled" : "")">
+                    <button class="page-link" data-page="@(Model.Page - 1)" data-pagesize="@Model.PageSize">«</button>
+                </li>
+                @for (int p = Math.Max(1, Model.Page - 2); p <= Math.Min(Model.PageCount, Model.Page + 2); p++)
+                {
+                    <li class="page-item @(p == Model.Page ? "active" : "")">
+                        <button class="page-link" data-page="@p" data-pagesize="@Model.PageSize">@p</button>
+                    </li>
+                }
+                <li class="page-item @(Model.Page >= Model.PageCount ? "disabled" : "")">
+                    <button class="page-link" data-page="@(Model.Page + 1)" data-pagesize="@Model.PageSize">»</button>
+                </li>
+            </ul>
+        </nav>
+    }
+
+    <p class="text-center text-muted small mt-1">
+        Trang @Model.Page / @Model.PageCount &nbsp;|&nbsp; Tổng @Model.RowCount đơn hàng
+    </p>
+}

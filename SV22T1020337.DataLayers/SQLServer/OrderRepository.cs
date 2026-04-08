@@ -34,14 +34,16 @@ namespace SV22T1020337.DataLayers.SQLServer
                      WHERE (@status = 0 OR o.Status = @status)
                      AND (@dateFrom IS NULL OR o.OrderTime >= @dateFrom)
                      AND (@dateTo IS NULL OR o.OrderTime <= @dateTo)
-                     AND (@searchValue = '' OR c.CustomerName LIKE '%' + @searchValue + '%')";
+                     AND (@searchValue = '' OR c.CustomerName LIKE '%' + @searchValue + '%')
+                     AND (@customerID = 0 OR o.CustomerID = @customerID)";
 
             result.RowCount = await connection.ExecuteScalarAsync<int>(countSql, new
             {
                 status = (int)input.Status,
                 dateFrom = input.DateFrom,
                 dateTo = input.DateTo,
-                searchValue = input.SearchValue ?? ""
+                searchValue = input.SearchValue ?? "",
+                customerID = input.CustomerID
             });
 
             string sql = @"SELECT o.*, 
@@ -68,6 +70,7 @@ namespace SV22T1020337.DataLayers.SQLServer
                 offset = input.Offset,
                 pageSize = input.PageSize,
                 searchValue = input.SearchValue ?? "",
+                customerID = input.CustomerID
             })).ToList();
 
             return result;

@@ -4,8 +4,8 @@
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     <title>LiteCommerce</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
-    <link rel="stylesheet" href="~/lib/flatpickr/flatpickr.min.css">    
-    <link rel="stylesheet" href="~/lib/bootstrap/bootstrap-icons.min.css" />    
+    <link rel="stylesheet" href="~/lib/flatpickr/flatpickr.min.css">
+    <link rel="stylesheet" href="~/lib/bootstrap/bootstrap-icons.min.css" />
     <link rel="stylesheet" href="~/lib/adminlte/css/adminlte.css" />
     <link rel="stylesheet" href="~/css/site.css" />
     @await RenderSectionAsync("Styles", required: false)
@@ -13,7 +13,7 @@
 <body class="layout-fixed fixed-header fixed-footer sidebar-expand-lg sidebar-open bg-body-tertiary">
     <div class="app-wrapper">
         @await Html.PartialAsync("_Header")
-        @await Html.PartialAsync("_Sidebar")        
+        @await Html.PartialAsync("_Sidebar")
         <main class="app-main">
             <div class="app-content-header">
                 <div class="container-fluid">
@@ -31,29 +31,45 @@
             </div>
             <div class="app-content">
                 <div class="container-fluid">
+                    @if (TempData["Success"] != null)
+                    {
+                        <div class="alert alert-success alert-dismissible fade show" role="alert">
+                            <i class="bi bi-check-circle-fill me-2"></i>
+                            @TempData["Success"]
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                        </div>
+                    }
+                    @if (TempData["Error"] != null)
+                    {
+                        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                            <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                            @TempData["Error"]
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                        </div>
+                    }
                     @RenderBody()
                 </div>
             </div>
         </main>
-        @await Html.PartialAsync("_Footer")        
+        @await Html.PartialAsync("_Footer")
     </div>
     <button id="scrollToTop" onclick="window.scrollTo(0,0)">
         <i class="bi bi-arrow-up-circle"></i>
     </button>
     <div class="modal fade" id="dialogModal" tabindex="-1" aria-hidden="true" style="display:none;">
         <div class="modal-dialog modal-lg modal-dialog-centered">
-            <div class="modal-content">                
+            <div class="modal-content">
             </div>
         </div>
     </div>
     <script src="~/lib/flatpickr/flatpickr.min.js"></script>
-    <script src="~/lib/flatpickr/l10n/vn.js"></script>    
-    <script src="~/lib/autonumeric/autonumeric.js"></script>    
+    <script src="~/lib/flatpickr/l10n/vn.js"></script>
+    <script src="~/lib/autonumeric/autonumeric.js"></script>
     <script src="~/lib/bootstrap/bootstrap.bundle.min.js"></script>
     <script type="module" src="~/lib/adminlte/js/adminlte.js"></script>
     <script src="~/js/site.js"></script>
     <script>
-        document.addEventListener("DOMContentLoaded", function () {            
+        document.addEventListener("DOMContentLoaded", function () {
             flatpickr(".date-picker", {
                 dateFormat: "d/m/Y",
                 locale: "vn",
@@ -67,10 +83,12 @@
                     unformatOnSubmit: true
                 });
             });
-            document.querySelectorAll(".open-modal").forEach(element => {                
-                 element.addEventListener("click", function (e) {                    
-                    openModal(e, this);
-                });
+            document.addEventListener("click", function (e) {
+                const element = e.target.closest(".open-modal");
+
+                if (element) {
+                    openModal(e, element);
+                }
             });
         });
     </script>

@@ -28,7 +28,7 @@ builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationSc
 // Configure Session
 builder.Services.AddSession(option =>
 {
-    option.IdleTimeout = TimeSpan.FromHours(2); 
+    option.IdleTimeout = TimeSpan.FromHours(2);
     option.Cookie.HttpOnly = true;
     option.Cookie.IsEssential = true;
 });
@@ -43,8 +43,9 @@ if (!app.Environment.IsDevelopment())
 app.UseStaticFiles();
 app.UseRouting();
 app.UseAuthentication();
-app.UseAuthorization();
 app.UseSession();
+app.UseAuthorization();
+
 
 //Configure Routing
 app.MapControllerRoute(

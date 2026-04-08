@@ -1,6 +1,7 @@
 ﻿@model Product
 @{
 }
+
 @section PageToolBar {
     <button type="submit" form="formEdit" class="btn btn-primary">
         <i class="bi bi-save"></i>
@@ -16,6 +17,7 @@
 <div class="row justify-content-center">
     <div class="col-12">
         <div class="card card-primary card-outline">
+
             <div class="card-header">
                 <h5 class="card-title mb-0">
                     <i class="bi bi-box-seam me-2"></i>
@@ -25,105 +27,178 @@
 
             <div class="card-body">
 
-                @Html.ValidationMessage("error", new { @class = "text-danger" })
-                <form id="formEdit" method="post" enctype="multipart/form-data">
+                @* SUCCESS *@
+                @if (TempData["Success"] != null)
+                {
+                    <div class="alert alert-success alert-dismissible fade show">
+                        @TempData["Success"]
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    </div>
+                }
+
+                @* ERROR *@
+                @if (!ViewData.ModelState.IsValid)
+                {
+                    <div class="alert alert-danger alert-dismissible fade show">
+                        Có lỗi xảy ra, vui lòng kiểm tra lại dữ liệu
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    </div>
+                }
+
+                @Html.ValidationSummary(true, "", new { @class = "text-danger mb-3" })
+
+                <form id="formEdit"
+                      method="post"
+                      asp-action="SaveData"
+                      enctype="multipart/form-data">
 
                     <input type="hidden" asp-for="ProductID" />
 
+                    <!-- TÊN -->
                     <div class="row mb-3">
                         <label class="col-sm-3 col-form-label">Tên mặt hàng</label>
                         <div class="col-sm-9">
-                            <input type="text" asp-for="ProductName"
-                                   class="form-control"
-                                   placeholder="" autofocus />
+                            <input asp-for="ProductName" class="form-control" />
                             <span asp-validation-for="ProductName" class="text-danger"></span>
                         </div>
                     </div>
 
+                    <!-- CATEGORY + SUPPLIER -->
                     <div class="row mb-3">
                         <label class="col-sm-3 col-form-label">Loại hàng</label>
                         <div class="col-sm-3">
-                            <select class="form-select" asp-for="CategoryID" asp-items="await SelectListHelper.CategoriesAsync()">
+                            <select class="form-select"
+                                    asp-for="CategoryID"
+                                    asp-items="await SelectListHelper.CategoriesAsync()">
                             </select>
                         </div>
 
                         <label class="col-sm-2 col-form-label text-end">Nhà cung cấp</label>
                         <div class="col-sm-4">
-                            <select class="form-select" asp-for="SupplierID" asp-items="await SelectListHelper.SuppliersAsync()">
+                            <select class="form-select"
+                                    asp-for="SupplierID"
+                                    asp-items="await SelectListHelper.SuppliersAsync()">
                             </select>
                         </div>
                     </div>
 
+                    <!-- UNIT + PRICE -->
                     <div class="row mb-3">
                         <label class="col-sm-3 col-form-label">Đơn vị tính</label>
                         <div class="col-sm-3">
-                            <input type="text" asp-for="Unit"
-                                   class="form-control"
-                                   placeholder="" />
+                            <input asp-for="Unit" class="form-control" />
                             <span asp-validation-for="Unit" class="text-danger"></span>
                         </div>
 
                         <label class="col-sm-2 col-form-label text-end">Giá</label>
                         <div class="col-sm-4">
-                            <input type="text" asp-for="Price"
-                                   class="form-control money-input"
-                                   placeholder="Giá bán"
-                                   min="0" />
+                            <input asp-for="Price" class="form-control" />
                             <span asp-validation-for="Price" class="text-danger"></span>
                         </div>
                     </div>
 
+                    <!-- STATUS -->
                     <div class="row mb-3">
                         <label class="col-sm-3 col-form-label">Trạng thái</label>
                         <div class="col-sm-9">
-                            <div class="form-check form-switch mt-2">
-                                <input class="form-check-input" asp-for="IsSelling"
-                                       type="checkbox"
-                                       id="IsSelling"
-                                       checked />
-                                <label class="form-check-label" for="IsSelling">
-                                    Đang bán
-                                </label>
-                            </div>
+                            <input class="form-check-input" asp-for="IsSelling" type="checkbox" />
                         </div>
                     </div>
 
+                    <!-- IMAGE -->
                     <div class="row mb-3">
                         <label class="col-sm-3 col-form-label">Ảnh</label>
                         <div class="col-sm-9">
                             <input type="hidden" asp-for="Photo" />
-                            <input type="file" name="uploadPhoto"
+
+                            <input type="file"
+                                   name="uploadPhoto"
                                    class="form-control"
                                    accept="image/*"
-                                   data-img-preview="imgPreview"
                                    onchange="previewImage(this)" />
-                            <div class="mt-2">
-                                <img id="imgPreview"
-                                     src="~/images/products/@(string.IsNullOrEmpty(Model.Photo) ? "nophoto.png" : Model.Photo)"
-                                     class="img-thumbnail"
-                                     style="max-height: 160px;" />
-                            </div>
+
+                            <img id="imgPreview"
+                                 src="~/images/products/@(string.IsNullOrEmpty(Model.Photo) ? "nophoto.png" : Model.Photo)"
+                                 class="img-thumbnail mt-2"
+                                 style="max-height:160px;" />
                         </div>
                     </div>
 
+                    <!-- DESCRIPTION -->
                     <div class="row mb-3">
                         <label class="col-sm-3 col-form-label">Mô tả</label>
                         <div class="col-sm-9">
-                            <textarea class="form-control" asp-for="ProductDescription"
-                                      rows="3"
-                                      placeholder=""></textarea>
+                            <textarea asp-for="ProductDescription" class="form-control"></textarea>
                         </div>
                     </div>
 
                 </form>
+
             </div>
         </div>
     </div>
 </div>
 
-@{
-    //if (Model.ProductId > 0) {
-    await Html.RenderPartialAsync("ListPhotos");
-    await Html.RenderPartialAsync("ListAttributes");
-    // }
+@* ===== PHOTOS + ATTRIBUTES ===== *@
+@if (Model.ProductID > 0)
+{
+    ViewBag.ProductId = Model.ProductID;
+
+    @await Html.PartialAsync("ListPhotos", ViewBag.Photos as List<ProductPhoto> ?? new List<ProductPhoto>())
+    @await Html.PartialAsync("ListAttributes", ViewBag.Attributes as List<ProductAttribute> ?? new List<ProductAttribute>())
 }
+
+<script>
+    function previewImage(input) {
+        const preview = document.getElementById("imgPreview");
+        const file = input.files[0];
+
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = e => preview.src = e.target.result;
+            reader.readAsDataURL(file);
+        }
+    }
+
+    document.addEventListener("DOMContentLoaded", function () {
+
+        const form = document.getElementById("formEdit");
+
+        form.addEventListener("submit", async function (e) {
+            e.preventDefault();
+
+            const formData = new FormData(form);
+
+            try {
+                const response = await fetch(form.action, {
+                    method: "POST",
+                    body: formData
+                });
+
+                if (response.redirected) {
+                    const id = document.querySelector("[name='ProductID']").value;
+
+                    alert(id == 0
+                        ? "Thêm sản phẩm thành công"
+                        : "Cập nhật sản phẩm thành công");
+
+                    window.location.href = response.url;
+                    return;
+                }
+
+                const html = await response.text();
+                const parser = new DOMParser();
+                const doc = parser.parseFromString(html, "text/html");
+
+                const newForm = doc.getElementById("formEdit");
+                if (newForm) {
+                    form.innerHTML = newForm.innerHTML;
+                }
+
+            } catch (err) {
+                console.error(err);
+                alert("Lỗi khi gửi dữ liệu");
+            }
+        });
+    });
+</script>
