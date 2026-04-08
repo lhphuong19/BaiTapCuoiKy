@@ -50,7 +50,8 @@ namespace SV22T1020337.DataLayers.SQLServer
                        c.CustomerName, c.ContactName CustomerContactName,
                        c.Email CustomerEmail, c.Phone CustomerPhone, c.Address CustomerAddress,
                        e.FullName EmployeeName,
-                       s.ShipperName, s.Phone ShipperPhone
+                       s.ShipperName, s.Phone ShipperPhone,
+                       ISNULL((SELECT SUM(od.Quantity * od.SalePrice) FROM OrderDetails od WHERE od.OrderID = o.OrderID), 0) AS TotalAmount
                 FROM Orders o
                 LEFT JOIN Customers c ON o.CustomerID = c.CustomerID
                 LEFT JOIN Employees e ON o.EmployeeID = e.EmployeeID
@@ -59,6 +60,7 @@ namespace SV22T1020337.DataLayers.SQLServer
                 AND (@dateFrom IS NULL OR o.OrderTime >= @dateFrom)
                 AND (@dateTo IS NULL OR o.OrderTime <= @dateTo)
                 AND (@searchValue = '' OR c.CustomerName LIKE '%' + @searchValue + '%')
+                AND (@customerID = 0 OR o.CustomerID = @customerID)
                 ORDER BY o.OrderTime DESC
                 OFFSET @offset ROWS FETCH NEXT @pageSize ROWS ONLY";
 
@@ -89,7 +91,8 @@ namespace SV22T1020337.DataLayers.SQLServer
                          c.Address AS CustomerAddress,
                          e.FullName AS EmployeeName,
                          s.ShipperName,
-                         s.Phone AS ShipperPhone
+                         s.Phone AS ShipperPhone,
+                         ISNULL((SELECT SUM(od.Quantity * od.SalePrice) FROM OrderDetails od WHERE od.OrderID = o.OrderID), 0) AS TotalAmount
                   FROM Orders o
                   LEFT JOIN Customers c ON o.CustomerID = c.CustomerID
                   LEFT JOIN Employees e ON o.EmployeeID = e.EmployeeID
